@@ -157,7 +157,72 @@ Below is a detailed list of props accepted by the `BullMQJobList` component:
 | `availableQueueNames` | `string[]`                             | No        | `undefined`   | List of queue names to display in the queue filter dropdown. If not provided, it's dynamically derived from the `queueName` field in each job.                                                     |
 | `refreshInterval`     | `number`                               | No        | `5000`        | Interval in milliseconds for auto refresh. This is used when auto refresh is enabled via the UI toggle.                                                                                           |
 | `onRefresh`           | `() => void`                           | No        | `undefined`   | Callback invoked when the "Refresh" button is clicked or auto refresh occurs. When provided, a Refresh button and auto refresh toggle appear in the UI.                                           |
-| `onJobAdd`            | `(queueName: string, jobName: string, jobData: any, jobOptions?: any) => Promise<void>` | No | `undefined` | Callback invoked when a new job is added via the "Add Job" button. When provided, a green Add Job button appears in the UI. |
+| `onJobAdd`            | `(queueName: string, jobName: string, jobData: any, jobOptions?: JobOptions) => Promise<void>` | No | `undefined` | Callback invoked when a new job is added via the "Add Job" button. When provided, a green Add Job button appears in the UI. |
+
+### `JobOptions` Interface for `onJobAdd`
+
+When using the `onJobAdd` prop, you can provide job options using the `JobOptions` interface:
+
+```typescript
+interface JobOptions {
+  delay?: number;              // Delay before processing the job (in ms)
+  attempts?: number;           // Number of attempts if job fails
+  backoff?: number | {         // Backoff strategy for failed jobs
+    type: string;              // Backoff type ("fixed" or "exponential")
+    delay: number;             // Initial delay between retries (in ms)
+  };
+  lifo?: boolean;              // Add job to the right end of the queue (Last In, First Out)
+  timeout?: number;            // Job timeout (in ms)
+  priority?: number;           // Job priority (higher numbers = higher priority)
+  removeOnComplete?: boolean | number | { 
+    count: number;             // Maximum number of completed jobs to keep
+    age: number;               // Maximum age in seconds of completed jobs to keep
+  };
+  removeOnFail?: boolean | number | { 
+    count: number;             // Maximum number of failed jobs to keep
+    age: number;               // Maximum age in seconds of failed jobs to keep
+  };
+  stackTraceLimit?: number;    // Limit stack trace size for errors
+  repeat?: {
+    pattern?: string;          // Cron pattern for recurring jobs
+    count?: number;            // Number of times the job should repeat
+    tz?: string;               // Timezone
+    endDate?: Date | string | number; // End date for recurring jobs
+    limit?: number;            // Maximum number of jobs to create
+    every?: number;            // Repeat every n milliseconds
+    cron?: string;             // Cron expression
+  };
+  jobId?: string;              // Custom job ID
+}
+```
+
+Example of using `onJobAdd` with job options:
+
+```javascript
+const handleAddJob = async (queueName, jobName, jobData, jobOptions) => {
+  // Example job options
+  const options = {
+    delay: 5000,           // 5 second delay
+    attempts: 3,           // Retry 3 times if failed
+    removeOnComplete: true, // Remove job after completion
+    priority: 2            // Higher priority
+  };
+  
+  const queue = new Queue(queueName, { connection: redisOptions });
+  await queue.add(jobName, jobData, jobOptions || options);
+  
+  // Refresh job list
+  fetchJobs();
+};
+
+// ...
+
+<BullMQJobList
+  // ...other props
+  onJobAdd={handleAddJob}
+  availableQueueNames={['videoQueue', 'emailQueue', 'reportQueue']}
+/>
+```
 
 ## Expected Properties for Job Objects
 

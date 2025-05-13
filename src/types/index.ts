@@ -1,5 +1,27 @@
 import { Job } from "bullmq";
 
+export interface JobOptions {
+  delay?: number;
+  attempts?: number;
+  backoff?: number | { type: string; delay: number };
+  lifo?: boolean;
+  timeout?: number;
+  priority?: number;
+  removeOnComplete?: boolean | number | { count: number; age: number };
+  removeOnFail?: boolean | number | { count: number; age: number };
+  stackTraceLimit?: number;
+  repeat?: {
+    pattern?: string;
+    count?: number;
+    tz?: string;
+    endDate?: Date | string | number;
+    limit?: number;
+    every?: number;
+    cron?: string;
+  };
+  jobId?: string;
+}
+
 // Ham job verileri için genişletilmiş tip
 export interface ExtendedJobType extends Partial<Job> {
   id?: string;
@@ -44,5 +66,10 @@ export interface BullMQJobListProps {
   availableQueueNames?: string[];
   refreshInterval?: number; // Refresh interval (ms)
   onRefresh?: () => void; // Callback for manual & automatic refresh
-  onJobAdd?: (queueName: string, jobName: string, jobData: any, jobOptions?: any) => Promise<void>; // New callback for adding jobs
+  onJobAdd?: (
+    queueName: string, 
+    jobName: string, 
+    jobData: any, 
+    jobOptions?: JobOptions
+  ) => Promise<void>; // New callback for adding jobs
 }
