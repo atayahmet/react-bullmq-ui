@@ -17,6 +17,8 @@ import {
   Card,
   Switch,
   Popconfirm,
+  Progress,
+  Tooltip,
 } from "antd";
 import type { TableProps, TableColumnsType } from "antd";
 import {
@@ -317,6 +319,54 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
       width: 110,
       render: (status: string) => <Tag color={getStatusColor(status)}>{status.toUpperCase()}</Tag>,
       sortOrder: tableSortInfo.columnKey === "currentStatus" ? tableSortInfo.order : undefined,
+    },
+    {
+      title: "Progress",
+      dataIndex: "progress",
+      key: "progress",
+      width: 150,
+      render: (progress: number | object | string | boolean | undefined) => {
+        if (progress === undefined || progress === null) {
+          return "-";
+        }
+
+        if (typeof progress === "number") {
+          return <Progress percent={progress} size="small" />;
+        }
+
+        if (typeof progress === "boolean") {
+          return progress ? (
+            <Progress percent={100} size="small" />
+          ) : (
+            <Progress percent={0} size="small" />
+          );
+        }
+
+        if (typeof progress === "string") {
+          const percentMatch = progress.match(/(\d+)%/);
+          if (percentMatch) {
+            const percent = parseInt(percentMatch[1], 10);
+            return <Progress percent={percent} size="small" />;
+          }
+          return <Tooltip title={progress}>{progress}</Tooltip>;
+        }
+
+        if (typeof progress === "object") {
+          if ("percentage" in progress && typeof progress.percentage === "number") {
+            return <Progress percent={progress.percentage} size="small" />;
+          } else if ("percent" in progress && typeof progress.percent === "number") {
+            return <Progress percent={progress.percent} size="small" />;
+          } else {
+            return (
+              <Tooltip title={JSON.stringify(progress)}>
+                <span>Object</span>
+              </Tooltip>
+            );
+          }
+        }
+
+        return "-";
+      },
     },
     {
       title: "Created At",
