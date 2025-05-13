@@ -1,0 +1,53 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Source files
+/src
+
+# Development files
+/example-app
+.prettierrc
+
+# Configuration
+tsconfig.json
+.gitignore
+.npmrc
+*.tsbuildinfo
+
+# Tests
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+jest.config.js
+coverage/
+.nyc_output
+
+# Editor directories and files
+.vscode
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Dependencies
+/node_modules
+
+# Local packages
+*.tgz
+
+# Git files
+.git
+.github
