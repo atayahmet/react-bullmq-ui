@@ -37,7 +37,7 @@ import { ALL_QUEUES, ALL_STATES } from "../constants";
 import JobDetailModal from "./JobDetailModal";
 import AddJobModal from "./AddJobModal";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { Option } = Select;
 
 const BullMQJobList: React.FC<BullMQJobListProps> = ({
@@ -78,10 +78,8 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
   const [isAddJobModalVisible, setIsAddJobModalVisible] = useState(false);
   const [isAddingJob, setIsAddingJob] = useState(false);
 
-  // Job state'leri otomatik olarak algılama
   const [jobStates, setJobStates] = useState<Record<string, string>>({});
 
-  // Mevcut job durumlarını takip etmek için
   const [availableJobStates, setAvailableJobStates] = useState<string[]>([
     "waiting",
     "active",
@@ -92,14 +90,12 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
     "waiting-children",
   ]);
 
-  // Job state'lerini job'lardan algıla
   useEffect(() => {
     const detectJobStates = async () => {
       if (initialJobs.length > 0) {
         const newJobStates: Record<string, string> = {};
         const stateSet = new Set<string>();
 
-        // Varsayılan durumları ekle
         stateSet.add("waiting");
         stateSet.add("active");
         stateSet.add("completed");
@@ -110,17 +106,16 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
 
         for (const job of initialJobs) {
           if (job.id) {
-            // ExtendedJobType türünde mi kontrol ediyoruz
             const extendedJob = job as ExtendedJobType;
             if (extendedJob.status) {
               newJobStates[job.id] = extendedJob.status;
-              stateSet.add(extendedJob.status); // Yeni durumu ekle
+              stateSet.add(extendedJob.status);
             }
           }
         }
 
         setJobStates(newJobStates);
-        setAvailableJobStates(Array.from(stateSet)); // Mevcut tüm durumları güncelle
+        setAvailableJobStates(Array.from(stateSet));
       }
     };
 
@@ -149,7 +144,6 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
     setModalError(null);
     setJobLogs([]);
 
-    // Job status'ünü direkt olarak kullan
     const status = jobRecord.currentStatus || "unknown";
     setModalJobStatus(status);
 
@@ -184,7 +178,7 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
     try {
       await onJobAdd(queueName, jobName, jobData, jobOptions);
       if (onRefresh) {
-        onRefresh(); // Refresh the job list after adding a job
+        onRefresh();
       }
     } catch (error) {
       console.error("Failed to add job:", error);
@@ -197,7 +191,6 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
     if (providedQueueNames && providedQueueNames.length > 0) {
       return providedQueueNames;
     }
-    // Queue isimlerini job'lardan topla
     const queueNames = new Set<string>();
     initialJobs.forEach((job) => {
       const queueName = (job as ExtendedJobType).queueName;
@@ -210,14 +203,11 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
 
   const processedAndFormattedJobs = useMemo(() => {
     let tableData: JobTableDataType[] = initialJobs.map((job) => {
-      // Queue bilgisini doğrudan job nesnesinden al
       const queueName = (job as ExtendedJobType).queueName || "unknown";
 
-      // Ham job nesnesi veya BullMQ Job nesnesi kontrolü
       const jobName = job.name || "";
       const timestamp = job.timestamp || Date.now();
 
-      // Özel alanların kontrolü
       const processedOn = job.processedOn;
       const finishedOn = job.finishedOn;
       const currentStatus = jobStates[job.id!] || (job as ExtendedJobType).status || "unknown";
@@ -228,7 +218,6 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
       const attemptsMade = job.attemptsMade || 0;
       const delay = job.delay;
 
-      // Farklı veri formatları için uyumluluk
       const progress = job.progress as any;
       const returnvalue = job.returnvalue || (job as ExtendedJobType).returnValue;
 
@@ -397,56 +386,58 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
       responsive: ["lg"],
       sortOrder: tableSortInfo.columnKey === "finishedOn" ? tableSortInfo.order : undefined,
     },
-    {
-      title: "Actions",
-      key: "actions",
-      width: 250,
-      fixed: "right",
-      render: (_, record: JobTableDataType) => (
-        <Space size="small">
-          {onFetchJobLogs && (
-            <Button size="small" icon={<EyeOutlined />} onClick={() => showDetailModal(record)}>
-              Details
-            </Button>
-          )}
+    ...(onFetchJobLogs || onJobRetry || onJobDelete
+      ? [
+          {
+            title: "Actions",
+            key: "actions",
+            width: 250,
+            fixed: "right" as const,
+            render: (_: unknown, record: JobTableDataType) => (
+              <Space size="small">
+                {onFetchJobLogs && (
+                  <Button size="small" icon={<EyeOutlined />} onClick={() => showDetailModal(record)}>
+                    Details
+                  </Button>
+                )}
 
-          {onJobRetry && (
-            <Button
-              size="small"
-              icon={<ReloadOutlined />}
-              onClick={() => onJobRetry(record.originalJob)}
-              disabled={record.currentStatus === "completed" || record.currentStatus === "active"}
-            >
-              Retry
-            </Button>
-          )}
+                {onJobRetry && (
+                  <Button
+                    size="small"
+                    icon={<ReloadOutlined />}
+                    onClick={() => onJobRetry(record.originalJob)}
+                    disabled={record.currentStatus === "completed" || record.currentStatus === "active"}
+                  >
+                    Retry
+                  </Button>
+                )}
 
-          {onJobDelete && (
-            <Popconfirm
-              title="Are you sure you want to delete?"
-              description="This action cannot be undone!"
-              onConfirm={() => onJobDelete(record.originalJob)}
-              okText="Yes"
-              cancelText="No"
-              placement="left"
-            >
-              <Button size="small" icon={<DeleteOutlined />} danger>
-                Del
-              </Button>
-            </Popconfirm>
-          )}
-        </Space>
-      ),
-    },
+                {onJobDelete && (
+                  <Popconfirm
+                    title="Are you sure you want to delete?"
+                    description="This action cannot be undone!"
+                    onConfirm={() => onJobDelete(record.originalJob)}
+                    okText="Yes"
+                    cancelText="No"
+                    placement="left"
+                  >
+                    <Button size="small" icon={<DeleteOutlined />} danger>
+                      Del
+                    </Button>
+                  </Popconfirm>
+                )}
+              </Space>
+            ),
+          },
+        ]
+      : []),
   ];
 
   if (isLoading && initialJobs.length === 0) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
-        <Spin size="large">
-          <div style={{ marginTop: 16 }}>Loading jobs...</div>
-        </Spin>
-      </div>
+      <Spin size="large">
+        <div style={{ marginTop: 16 }}>Loading jobs...</div>
+      </Spin>
     );
   }
 
@@ -457,7 +448,6 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
         description={error}
         type="error"
         showIcon
-        style={{ margin: "20px" }}
       />
     );
   }
@@ -487,10 +477,7 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
   }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <Title level={3} style={{ marginBottom: "20px" }}>
-        BullMQ Job Dashboard
-      </Title>
+    <>
       <Card style={{ marginBottom: 20 }}>
         <Row gutter={[16, 16]} align="bottom">
           <Col xs={24} sm={12} md={6} lg={5}>
@@ -626,7 +613,7 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
           isLoading={isAddingJob}
         />
       )}
-    </div>
+    </>
   );
 };
 

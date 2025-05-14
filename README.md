@@ -159,6 +159,19 @@ Below is a detailed list of props accepted by the `BullMQJobList` component:
 | `onRefresh`           | `() => void`                           | No        | `undefined`   | Callback invoked when the "Refresh" button is clicked or auto refresh occurs. When provided, a Refresh button and auto refresh toggle appear in the UI.                                           |
 | `onJobAdd`            | `(queueName: string, jobName: string, jobData: any, jobOptions?: JobOptions) => Promise<void>` | No | `undefined` | Callback invoked when a new job is added via the "Add Job" button. When provided, a green Add Job button appears in the UI. |
 
+### Action Buttons Display Logic
+
+The Actions column in the job list table is displayed conditionally:
+
+- If none of the action handlers (`onJobRetry`, `onJobDelete`, `onFetchJobLogs`) are provided, the entire Actions column will be hidden.
+- When at least one of these handlers is provided, the Actions column will be displayed.
+- Each button within the Actions column is also conditionally displayed:
+  - The "Details" button only appears when `onFetchJobLogs` is provided
+  - The "Retry" button only appears when `onJobRetry` is provided
+  - The "Delete" button only appears when `onJobDelete` is provided
+
+This allows you to customize which actions are available to users without showing empty action columns or disabled buttons.
+
 ### `JobOptions` Interface for `onJobAdd`
 
 When using the `onJobAdd` prop, you can provide job options using the `JobOptions` interface:
