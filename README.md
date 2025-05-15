@@ -14,6 +14,7 @@
 - Callback support for job actions (Retry, Delete)
 - Automatic job status detection
 - Support for both BullMQ Job objects and custom job formats
+- Light and dark mode support with system theme detection
 - Developed with TypeScript and includes type definitions
 
 ## Installation
@@ -131,8 +132,17 @@ const App = () => {
         onFetchJobLogs={handleFetchLogs}
         onRefresh={handleRefresh}
         onJobAdd={handleAddJob}
-        availableQueueNames={['videoQueue', 'emailQueue', 'reportQueue']} // Optional: Manually provide queues for filter
+        availableQueues={['videoQueue', 'emailQueue', 'reportQueue']} // Simple array of strings format
+        // Alternative format with pause states:
+        // availableQueues={[
+        //   {name: 'videoQueue', isPaused: false},
+        //   {name: 'emailQueue', isPaused: true},
+        //   {name: 'reportQueue', isPaused: false}
+        // ]}
+        onQueuePauseToggle={(queueName, isPaused) => console.log(`Queue ${queueName} is now ${isPaused ? 'paused' : 'active'}`)}
+        // If onQueuePauseToggle is not provided, the Queue Management modal will show queue states as read-only
         defaultPageSize={10}
+        theme="light" // Or 'dark' or 'auto' for system preference
       />
     </div>
   );
@@ -150,14 +160,16 @@ Below is a detailed list of props accepted by the `BullMQJobList` component:
 | `jobs`                | `Job[] | CustomJob[]`                  | Yes       | -             | Array of BullMQ `Job` objects or custom job objects to display. Job states are automatically detected using the `status` field and queue names are taken from the `queueName` field in each job.   |
 | `isLoading`           | `boolean`                              | No        | `false`       | Indicates if the job list is loading. Used for a general loading indicator when the entire list is empty or being updated.                                                                        |
 | `error`               | `string \| null`                       | No        | `null`        | Displays an error message if an error occurs while loading jobs.                                                                                                                                  |
-| `onJobRetry`          | `(job: Job) => void`                   | No        | `undefined`   | Callback invoked when a job is retried (via the "Retry" button).                                                                                                                                  |
+| `onJobRetry`          | `(job: Job) => void`                    | No        | `undefined`   | Callback invoked when a job is retried (via the "Retry" button).                                                                                                                                  |
 | `onJobDelete`         | `(job: Job) => void`                   | No        | `undefined`   | Callback invoked when a job is deleted (via the "Delete" button). The `jobs` list is expected to be updated after this call.                                                                      |
 | `onFetchJobLogs`      | `(jobId: string) => Promise<string[]>` | No        | `undefined`   | Asynchronous callback invoked to fetch job logs when the "Logs" tab is opened in the job detail modal. Takes `jobId` and should return a `Promise` resolving to an array of log strings.          |
 | `defaultPageSize`     | `number`                               | No        | `10`          | Default number of jobs per page.                                                                                                                                                                  |
-| `availableQueueNames` | `string[]`                             | No        | `undefined`   | List of queue names to display in the queue filter dropdown. If not provided, it's dynamically derived from the `queueName` field in each job.                                                     |
+| `availableQueues` | `string[] | Array<{name: string, isPaused: boolean}>`  | No        | `undefined`   | List of queue names or queue objects to display in the queue filter dropdown. Two formats are supported: simple array of strings or array of objects with pause states. If not provided, queue names are derived from jobs.  |
 | `refreshInterval`     | `number`                               | No        | `5000`        | Interval in milliseconds for auto refresh. This is used when auto refresh is enabled via the UI toggle.                                                                                           |
 | `onRefresh`           | `() => void`                           | No        | `undefined`   | Callback invoked when the "Refresh" button is clicked or auto refresh occurs. When provided, a Refresh button and auto refresh toggle appear in the UI.                                           |
 | `onJobAdd`            | `(queueName: string, jobName: string, jobData: any, jobOptions?: JobOptions) => Promise<void>` | No | `undefined` | Callback invoked when a new job is added via the "Add Job" button. When provided, a green Add Job button appears in the UI. |
+| `onQueuePauseToggle`  | `(queueName: string, isPaused: boolean) => void` | No | `undefined` | Callback invoked when a queue's pause state is toggled via the Queue Management modal. When provided, switches are shown in the Queue Management modal to toggle queue states. If not provided, queue states are shown as read-only. |
+| `theme`               | `'light' \| 'dark' \| 'auto'`          | No        | `'light'`     | Sets the theme for the component. 'light' for light mode, 'dark' for dark mode, or 'auto' to use the system preference. |
 
 ### Action Buttons Display Logic
 
@@ -171,6 +183,23 @@ The Actions column in the job list table is displayed conditionally:
   - The "Delete" button only appears when `onJobDelete` is provided
 
 This allows you to customize which actions are available to users without showing empty action columns or disabled buttons.
+
+### Theme Support
+
+BullMQJobList supports light and dark themes, as well as automatic system theme detection:
+
+```jsx
+// Light mode (default)
+<BullMQJobList theme="light" {...otherProps} />
+
+// Dark mode
+<BullMQJobList theme="dark" {...otherProps} />
+
+// Auto mode - uses the system preference
+<BullMQJobList theme="auto" {...otherProps} />
+```
+
+The theme setting affects all UI components including the job table, modals, buttons, and other elements. When using 'auto' mode, the component will automatically switch between light and dark themes based on the user's system preferences.
 
 ### `JobOptions` Interface for `onJobAdd`
 
@@ -233,7 +262,10 @@ const handleAddJob = async (queueName, jobName, jobData, jobOptions) => {
 <BullMQJobList
   // ...other props
   onJobAdd={handleAddJob}
-  availableQueueNames={['videoQueue', 'emailQueue', 'reportQueue']}
+  availableQueues={['videoQueue', 'emailQueue', 'reportQueue']}
+  // Optional: provide onQueuePauseToggle to enable queue pause/resume controls
+  onQueuePauseToggle={(queueName, isPaused) => console.log(`Queue ${queueName} is now ${isPaused ? 'paused' : 'active'}`)}
+  // Without onQueuePauseToggle, queue states are displayed as read-only
 />
 ```
 

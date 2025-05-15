@@ -63,7 +63,8 @@ export interface BullMQJobListProps {
   onJobDelete?: (job: Job) => void;
   onFetchJobLogs?: (jobId: string) => Promise<string[]>;
   defaultPageSize?: number;
-  availableQueueNames?: string[];
+  // Renamed from availableQueueNames to availableQueues and supports two formats
+  availableQueues?: string[] | Array<{name: string, isPaused: boolean}>;
   refreshInterval?: number; // Refresh interval (ms)
   onRefresh?: () => void; // Callback for manual & automatic refresh
   onJobAdd?: (
@@ -72,4 +73,6 @@ export interface BullMQJobListProps {
     jobData: any, 
     jobOptions?: JobOptions
   ) => Promise<void>; // New callback for adding jobs
+  onQueuePauseToggle?: (queueName: string, isPaused: boolean) => void; // Callback for queue pause/resume
+  theme?: 'light' | 'dark' | 'auto'; // Theme mode for UI components
 }

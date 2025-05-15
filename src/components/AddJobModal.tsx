@@ -144,7 +144,7 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
       open={isVisible} 
       onCancel={onCancel} 
       footer={null} 
-      destroyOnClose
+      destroyOnHidden
       width={700}
     >
       <Form form={form} layout="vertical">

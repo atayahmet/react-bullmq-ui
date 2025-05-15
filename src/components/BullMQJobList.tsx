@@ -19,6 +19,9 @@ import {
   Popconfirm,
   Progress,
   Tooltip,
+  Modal,
+  List,
+  message,
 } from "antd";
 import type { TableProps, TableColumnsType } from "antd";
 import {
@@ -29,13 +32,20 @@ import {
   AppstoreOutlined,
   SyncOutlined,
   PlusOutlined,
+  SettingOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+  CopyOutlined,
+  CheckOutlined,
 } from "@ant-design/icons";
 
-import { BullMQJobListProps, JobTableDataType, ExtendedJobType } from "../types";
+import { BullMQJobListProps, JobTableDataType, ExtendedJobType } from "../types/index";
 import { getStatusColor, formatTimestamp } from "../utils/formatters";
 import { ALL_QUEUES, ALL_STATES } from "../constants";
 import JobDetailModal from "./JobDetailModal";
 import AddJobModal from "./AddJobModal";
+import QueueManagementModal from "./QueueManagementModal";
+import ThemeProvider from "./ThemeProvider";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -48,10 +58,12 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
   onJobDelete,
   onFetchJobLogs,
   defaultPageSize = 10,
-  availableQueueNames: providedQueueNames,
+  availableQueues: providedQueues,
   refreshInterval = 5000,
   onRefresh,
   onJobAdd,
+  onQueuePauseToggle,
+  theme = 'light',
 }) => {
   const [searchText, setSearchText] = useState("");
   const [statusFilters, setStatusFilters] = useState<string[]>([ALL_STATES]);
@@ -77,6 +89,8 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
 
   const [isAddJobModalVisible, setIsAddJobModalVisible] = useState(false);
   const [isAddingJob, setIsAddingJob] = useState(false);
+  
+  const [isQueueManagementModalVisible, setIsQueueManagementModalVisible] = useState(false);
 
   const [jobStates, setJobStates] = useState<Record<string, string>>({});
 
@@ -188,9 +202,18 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
   };
 
   const allQueueNamesForFilter = useMemo(() => {
-    if (providedQueueNames && providedQueueNames.length > 0) {
-      return providedQueueNames;
+    if (providedQueues && providedQueues.length > 0) {
+      // Handle both variants: string[] and {name, isPaused}[]
+      if (typeof providedQueues[0] === 'string') {
+        // Variant 1: ["queue-1", "queue-2"]
+        return providedQueues as string[];
+      } else {
+        // Variant 2: [{name: "queue-1", isPaused: true}, ...]
+        return (providedQueues as {name: string, isPaused: boolean}[]).map(q => q.name);
+      }
     }
+    
+    // Extract queue names from jobs if no queues were provided
     const queueNames = new Set<string>();
     initialJobs.forEach((job) => {
       const queueName = (job as ExtendedJobType).queueName;
@@ -199,7 +222,20 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
       }
     });
     return Array.from(queueNames);
-  }, [initialJobs, providedQueueNames]);
+  }, [initialJobs, providedQueues]);
+
+  // Extract queue pause states for use in queue management
+  const queuePauseStates = useMemo(() => {
+    if (providedQueues && providedQueues.length > 0 && typeof providedQueues[0] !== 'string') {
+      // Create a map of queue name to pause state
+      const pauseStateMap: Record<string, boolean> = {};
+      (providedQueues as {name: string, isPaused: boolean}[]).forEach(queue => {
+        pauseStateMap[queue.name] = queue.isPaused;
+      });
+      return pauseStateMap;
+    }
+    return {} as Record<string, boolean>;
+  }, [providedQueues]);
 
   const processedAndFormattedJobs = useMemo(() => {
     let tableData: JobTableDataType[] = initialJobs.map((job) => {
@@ -259,28 +295,52 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
     return tableData;
   }, [initialJobs, searchText, statusFilters, jobStates, selectedQueueFilter]);
 
+  // ID kopyalama işlemlerini takip etmek için bir state map kullanıyoruz
+  const [copiedIds, setCopiedIds] = useState<Record<string, boolean>>({});
+  
+  // ID kopyalama işlemi için handler
+  const handleCopyId = (id: string) => {
+    navigator.clipboard.writeText(String(id));
+    
+    // Bu ID'yi kopyalandı olarak işaretle
+    setCopiedIds(prev => ({ ...prev, [id]: true }));
+    
+    // 1 saniye sonra işareti kaldır
+    setTimeout(() => {
+      setCopiedIds(prev => ({ ...prev, [id]: false }));
+    }, 1000);
+  };
+  
   const columns: TableColumnsType<JobTableDataType> = [
     {
       title: "ID",
       dataIndex: "id",
       key: "id",
       sorter: true,
-      width: 100,
-      ellipsis: true,
-      render: (id) => (
-        <Text
-          copyable={{ text: String(id) }}
-          style={{
-            maxWidth: 80,
-            display: "inline-block",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {String(id)}
-        </Text>
-      ),
+      width: 160,
+      render: (id) => {
+        const isCopied = copiedIds[String(id)] || false;
+        
+        return (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Button
+              type="text"
+              size="small"
+              icon={isCopied ? <CheckOutlined style={{ color: '#52c41a' }} /> : <CopyOutlined />}
+              style={{ padding: '0 4px', marginRight: 4, minWidth: 30 }}
+              onClick={() => handleCopyId(String(id))}
+            />
+            <div style={{ 
+              maxWidth: 'calc(100% - 34px)', 
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>
+              {String(id).length > 12 ? String(id).substring(0, 12) + '...' : String(id)}
+            </div>
+          </div>
+        );
+      },
       sortOrder: tableSortInfo.columnKey === "id" ? tableSortInfo.order : undefined,
     },
     {
@@ -477,92 +537,131 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
   }
 
   return (
-    <>
+    <ThemeProvider defaultTheme={theme}>
       <Card style={{ marginBottom: 20 }}>
-        <Row gutter={[16, 16]} align="bottom">
-          <Col xs={24} sm={12} md={6} lg={5}>
-            <Input
-              placeholder="Search by Job ID or Name"
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              allowClear
-            />
-          </Col>
-          <Col xs={24} sm={12} md={6} lg={5}>
-            <Select
-              style={{ width: "100%" }}
-              placeholder="Filter by Queue"
-              value={selectedQueueFilter}
-              onChange={setSelectedQueueFilter}
-              allowClear={selectedQueueFilter !== ALL_QUEUES}
-            >
-              <Option key={ALL_QUEUES} value={ALL_QUEUES}>
-                <AppstoreOutlined style={{ marginRight: 4 }} />
-                ALL QUEUES
-              </Option>
-              {allQueueNamesForFilter.map((qName) => (
-                <Option key={qName} value={qName}>
-                  {qName}
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          {/* Filters Section */}
+          <Row gutter={[16, 16]}>
+            {/* Search input */}
+            <Col xs={24} sm={8} md={8} lg={7} xl={6}>
+              <Input
+                placeholder="Search by Job ID or Name"
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                allowClear
+              />
+            </Col>
+            
+            {/* Queue filter */}
+            <Col xs={24} sm={8} md={8} lg={7} xl={6}>
+              <Select
+                style={{ width: "100%" }}
+                placeholder="Filter by Queue"
+                value={selectedQueueFilter}
+                onChange={setSelectedQueueFilter}
+                allowClear={selectedQueueFilter !== ALL_QUEUES}
+              >
+                <Option key={ALL_QUEUES} value={ALL_QUEUES}>
+                  <AppstoreOutlined style={{ marginRight: 4 }} />
+                  ALL QUEUES
                 </Option>
-              ))}
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} md={6} lg={6}>
-            <Select
-              mode="multiple"
-              allowClear
-              style={{ width: "100%" }}
-              placeholder="Filter by status"
-              value={statusFilters}
-              onChange={setStatusFilters}
-              maxTagCount="responsive"
-            >
-              <Option key={ALL_STATES} value={ALL_STATES}>
-                <Tag>ALL STATUSES</Tag>
-              </Option>
-              {availableJobStates.map((state) => (
-                <Option key={state} value={state}>
-                  <Tag color={getStatusColor(state)}>{state.toUpperCase()}</Tag>
+                {allQueueNamesForFilter.map((qName) => (
+                  <Option key={qName} value={qName}>
+                    {qName}
+                  </Option>
+                ))}
+              </Select>
+            </Col>
+            
+            {/* Status filter */}
+            <Col xs={24} sm={8} md={8} lg={10} xl={12}>
+              <Select
+                mode="multiple"
+                allowClear
+                style={{ width: "100%" }}
+                placeholder="Filter by status"
+                value={statusFilters}
+                onChange={setStatusFilters}
+                maxTagCount="responsive"
+              >
+                <Option key={ALL_STATES} value={ALL_STATES}>
+                  <Tag>ALL STATUSES</Tag>
                 </Option>
-              ))}
-            </Select>
-          </Col>
-          <Col xs={24} sm={24} md={6} lg={8} style={{ textAlign: "right" }}>
-            <Space>
-              {onJobAdd && (
+                {availableJobStates.map((state) => (
+                  <Option key={state} value={state}>
+                    <Tag color={getStatusColor(state)}>{state.toUpperCase()}</Tag>
+                  </Option>
+                ))}
+              </Select>
+            </Col>
+          </Row>
+          
+          {/* Job Count Row */}
+          <Row>
+            <Col span={24}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text type="secondary">
+                  Total Jobs: <strong>{processedAndFormattedJobs.length}</strong>
+                  {selectedQueueFilter !== ALL_QUEUES && 
+                    <> in queue <Tag>{selectedQueueFilter}</Tag></>
+                  }
+                  {statusFilters.length > 0 && !statusFilters.includes(ALL_STATES) && 
+                    <> with status {statusFilters.map(s => <Tag color={getStatusColor(s)} key={s}>{s.toUpperCase()}</Tag>)}</>
+                  }
+                </Text>
+              </div>
+            </Col>
+          </Row>
+          
+          {/* Actions Section */}
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={24} md={24} lg={24}>
+              <Space wrap size="middle" style={{ width: '100%', justifyContent: 'flex-start' }}>
                 <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => setIsAddJobModalVisible(true)}
-                  color="green"
+                  icon={<SettingOutlined />}
+                  onClick={() => setIsQueueManagementModalVisible(true)}
                 >
-                  Add Job
+                  Queue Management
                 </Button>
-              )}
-              {onRefresh && (
-                <>
+              
+                {onJobAdd && (
                   <Button
                     type="primary"
-                    icon={<ReloadOutlined />}
-                    onClick={handleRefresh}
-                    loading={isLoading}
+                    icon={<PlusOutlined />}
+                    onClick={() => setIsAddJobModalVisible(true)}
                   >
-                    Refresh
+                    Add Job
                   </Button>
-                  <span>Auto refresh:</span>
-                  <Switch
-                    checkedChildren="ON"
-                    unCheckedChildren="OFF"
-                    checked={autoRefreshEnabled}
-                    onChange={setAutoRefreshEnabled}
-                    disabled={!onRefresh}
-                  />
-                </>
-              )}
-            </Space>
-          </Col>
-        </Row>
+                )}
+                
+                {onRefresh && (
+                  <>
+                    <Button
+                      type="primary"
+                      icon={<ReloadOutlined />}
+                      onClick={handleRefresh}
+                      loading={isLoading}
+                    >
+                      Refresh
+                    </Button>
+                    
+                    <Space size="small" style={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ whiteSpace: 'nowrap' }}>Auto refresh:</span>
+                      <Switch
+                        checkedChildren="ON"
+                        unCheckedChildren="OFF"
+                        checked={autoRefreshEnabled}
+                        onChange={setAutoRefreshEnabled}
+                        disabled={!onRefresh}
+                      />
+                    </Space>
+                  </>
+                )}
+              </Space>
+            </Col>
+          </Row>
+        </div>
       </Card>
 
       <Table<JobTableDataType>
@@ -609,11 +708,19 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
           isVisible={isAddJobModalVisible}
           onCancel={() => setIsAddJobModalVisible(false)}
           onAdd={handleAddJob}
-          availableQueueNames={providedQueueNames || allQueueNamesForFilter}
+          availableQueueNames={allQueueNamesForFilter}
           isLoading={isAddingJob}
         />
       )}
-    </>
+
+      <QueueManagementModal
+        isVisible={isQueueManagementModalVisible}
+        onCancel={() => setIsQueueManagementModalVisible(false)}
+        queueNames={allQueueNamesForFilter}
+        pauseStates={queuePauseStates}
+        onQueuePauseToggle={onQueuePauseToggle}
+      />
+    </ThemeProvider>
   );
 };
 
