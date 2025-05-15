@@ -43,8 +43,8 @@ import "antd/dist/reset.css"; // Recommended reset styles for Ant Design v5+
 Below is a basic example of how to use the `BullMQJobList` component:
 
 ```jsx
-import React, { useState, useEffect } from 'react';
-import BullMQJobList from 'react-bullmq-ui'; // Import the linked package
+import React, { useState, useEffect } from "react";
+import BullMQJobList from "react-bullmq-ui"; // Import the linked package
 // You will need to set up your Queue instance and Redis connection
 // import { Queue } from 'bullmq';
 // const myQueue = new Queue('myQueueName', { connection: { host: 'localhost', port: 6379 } });
@@ -60,10 +60,10 @@ const App = () => {
   // This function should fetch jobs and related information from your BullMQ Queues.
   // Replace this with your actual implementation.
   const fetchJobs = async () => {
-    console.log('Fetching jobs...');
+    console.log("Fetching jobs...");
     // TODO: Implement actual job fetching logic here
     // This function should fetch jobs from your BullMQ Queues with queue info
-    // Example: 
+    // Example:
     // const queues = ['videoQueue', 'emailQueue', 'reportQueue'];
     // const allJobs = [];
     // for (const queueName of queues) {
@@ -86,7 +86,7 @@ const App = () => {
       const fetchedJobs = await fetchJobs();
       setJobs(fetchedJobs);
     } catch (err) {
-      setError(err.message || 'Failed to fetch job details.');
+      setError(err.message || "Failed to fetch job details.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -109,14 +109,14 @@ const App = () => {
   };
 
   const handleRefresh = () => {
-    console.log('Refreshing job list...');
+    console.log("Refreshing job list...");
     fetchJobsAndDetails();
   };
 
   const handleAddJob = async (queueName, jobName, jobData, jobOptions) => {
     console.log(`Adding job to queue: ${queueName}`);
     // Actual job addition implementation should be here
-    // Example: const queue = new Queue(queueName, { connection: redisOptions }); 
+    // Example: const queue = new Queue(queueName, { connection: redisOptions });
     // await queue.add(jobName, jobData, jobOptions);
     fetchJobsAndDetails(); // Refresh the list after adding a job
   };
@@ -127,19 +127,21 @@ const App = () => {
         jobs={jobs}
         isLoading={loading}
         error={error}
-        onJobRetry={(job) => handleJobAction('Retrying', job)}
-        onJobDelete={(job) => handleJobAction('Deleting', job)}
+        onJobRetry={(job) => handleJobAction("Retrying", job)}
+        onJobDelete={(job) => handleJobAction("Deleting", job)}
         onFetchJobLogs={handleFetchLogs}
         onRefresh={handleRefresh}
         onJobAdd={handleAddJob}
-        availableQueues={['videoQueue', 'emailQueue', 'reportQueue']} // Simple array of strings format
+        availableQueues={["videoQueue", "emailQueue", "reportQueue"]} // Simple array of strings format
         // Alternative format with pause states:
         // availableQueues={[
         //   {name: 'videoQueue', isPaused: false},
         //   {name: 'emailQueue', isPaused: true},
         //   {name: 'reportQueue', isPaused: false}
         // ]}
-        onQueuePauseToggle={(queueName, isPaused) => console.log(`Queue ${queueName} is now ${isPaused ? 'paused' : 'active'}`)}
+        onQueuePauseToggle={(queueName, isPaused) =>
+          console.log(`Queue ${queueName} is now ${isPaused ? "paused" : "active"}`)
+        }
         // If onQueuePauseToggle is not provided, the Queue Management modal will show queue states as read-only
         defaultPageSize={10}
         theme="light" // Or 'dark' or 'auto' for system preference
@@ -155,21 +157,21 @@ export default App;
 
 Below is a detailed list of props accepted by the `BullMQJobList` component:
 
-| Prop                  | Type                                   | Required? | Default Value | Description                                                                                                                                                                                       |
-| --------------------- | -------------------------------------- | --------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `jobs`                | `Job[] | CustomJob[]`                  | Yes       | -             | Array of BullMQ `Job` objects or custom job objects to display. Job states are automatically detected using the `status` field and queue names are taken from the `queueName` field in each job.   |
-| `isLoading`           | `boolean`                              | No        | `false`       | Indicates if the job list is loading. Used for a general loading indicator when the entire list is empty or being updated.                                                                        |
-| `error`               | `string \| null`                       | No        | `null`        | Displays an error message if an error occurs while loading jobs.                                                                                                                                  |
-| `onJobRetry`          | `(job: Job) => void`                    | No        | `undefined`   | Callback invoked when a job is retried (via the "Retry" button).                                                                                                                                  |
-| `onJobDelete`         | `(job: Job) => void`                   | No        | `undefined`   | Callback invoked when a job is deleted (via the "Delete" button). The `jobs` list is expected to be updated after this call.                                                                      |
-| `onFetchJobLogs`      | `(jobId: string) => Promise<string[]>` | No        | `undefined`   | Asynchronous callback invoked to fetch job logs when the "Logs" tab is opened in the job detail modal. Takes `jobId` and should return a `Promise` resolving to an array of log strings.          |
-| `defaultPageSize`     | `number`                               | No        | `10`          | Default number of jobs per page.                                                                                                                                                                  |
-| `availableQueues` | `string[] | Array<{name: string, isPaused: boolean}>`  | No        | `undefined`   | List of queue names or queue objects to display in the queue filter dropdown. Two formats are supported: simple array of strings or array of objects with pause states. If not provided, queue names are derived from jobs.  |
-| `refreshInterval`     | `number`                               | No        | `5000`        | Interval in milliseconds for auto refresh. This is used when auto refresh is enabled via the UI toggle.                                                                                           |
-| `onRefresh`           | `() => void`                           | No        | `undefined`   | Callback invoked when the "Refresh" button is clicked or auto refresh occurs. When provided, a Refresh button and auto refresh toggle appear in the UI.                                           |
-| `onJobAdd`            | `(queueName: string, jobName: string, jobData: any, jobOptions?: JobOptions) => Promise<void>` | No | `undefined` | Callback invoked when a new job is added via the "Add Job" button. When provided, a green Add Job button appears in the UI. |
-| `onQueuePauseToggle`  | `(queueName: string, isPaused: boolean) => void` | No | `undefined` | Callback invoked when a queue's pause state is toggled via the Queue Management modal. When provided, switches are shown in the Queue Management modal to toggle queue states. If not provided, queue states are shown as read-only. |
-| `theme`               | `'light' \| 'dark' \| 'auto'`          | No        | `'light'`     | Sets the theme for the component. 'light' for light mode, 'dark' for dark mode, or 'auto' to use the system preference. |
+| Prop                 | Type                                                                                           | Required? | Default Value | Description                                                                                                                                                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------------- | --------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `jobs`               | `Job[] \| CustomJob[]`                                                                         | Yes       | -             | Array of BullMQ `Job` objects or custom job objects to display. Job states are automatically detected using the `status` field and queue names are taken from the `queueName` field in each job.                                     |
+| `isLoading`          | `boolean`                                                                                      | No        | `false`       | Indicates if the job list is loading. Used for a general loading indicator when the entire list is empty or being updated.                                                                                                           |
+| `error`              | `string \| null`                                                                               | No        | `null`        | Displays an error message if an error occurs while loading jobs.                                                                                                                                                                     |
+| `onJobRetry`         | `(job: Job) => void`                                                                           | No        | `undefined`   | Callback invoked when a job is retried (via the "Retry" button).                                                                                                                                                                     |
+| `onJobDelete`        | `(job: Job) => void`                                                                           | No        | `undefined`   | Callback invoked when a job is deleted (via the "Delete" button). The `jobs` list is expected to be updated after this call.                                                                                                         |
+| `onFetchJobLogs`     | `(jobId: string) => Promise<string[]>`                                                         | No        | `undefined`   | Asynchronous callback invoked to fetch job logs when the "Logs" tab is opened in the job detail modal. Takes `jobId` and should return a `Promise` resolving to an array of log strings.                                             |
+| `defaultPageSize`    | `number`                                                                                       | No        | `10`          | Default number of jobs per page.                                                                                                                                                                                                     |
+| `availableQueues`    | `string[] \| Array<{name: string, isPaused: boolean}>`                                         | No        | `undefined`   | List of queue names or queue objects to display in the queue filter dropdown. Two formats are supported: simple array of strings or array of objects with pause states. If not provided, queue names are derived from jobs.           |
+| `refreshInterval`    | `number`                                                                                       | No        | `5000`        | Interval in milliseconds for auto refresh. This is used when auto refresh is enabled via the UI toggle.                                                                                                                              |
+| `onQueuePauseToggle` | `(queueName: string, isPaused: boolean) => void`                                               | No        | `undefined`   | Callback invoked when a queue is paused or resumed (via the queue dropdown actions). Takes `queueName` and `isPaused` parameters.                                                                                                    |
+| `onRefresh`          | `() => void`                                                                                   | No        | `undefined`   | Callback invoked when manual refresh is triggered (via the refresh button). Use this to update your `jobs` prop.                                                                                                                     |
+| `onJobAdd`           | `(queueName: string, jobName: string, jobData: any, jobOptions?: any) => Promise<void>`        | No        | `undefined`   | Callback invoked when a new job is added (via the "Add Job" button). Takes `queueName`, `jobName`, `jobData` and optional `jobOptions` parameters.                                                                                  |
+| `theme`              | `'light' \| 'dark' \| 'auto'`                                                                  | No        | `'light'`     | Sets the theme for the component. 'light' for light mode, 'dark' for dark mode, or 'auto' to use the system preference.                                                                                                              |
 
 ### Action Buttons Display Logic
 
@@ -207,34 +209,43 @@ When using the `onJobAdd` prop, you can provide job options using the `JobOption
 
 ```typescript
 interface JobOptions {
-  delay?: number;              // Delay before processing the job (in ms)
-  attempts?: number;           // Number of attempts if job fails
-  backoff?: number | {         // Backoff strategy for failed jobs
-    type: string;              // Backoff type ("fixed" or "exponential")
-    delay: number;             // Initial delay between retries (in ms)
-  };
-  lifo?: boolean;              // Add job to the right end of the queue (Last In, First Out)
-  timeout?: number;            // Job timeout (in ms)
-  priority?: number;           // Job priority (higher numbers = higher priority)
-  removeOnComplete?: boolean | number | { 
-    count: number;             // Maximum number of completed jobs to keep
-    age: number;               // Maximum age in seconds of completed jobs to keep
-  };
-  removeOnFail?: boolean | number | { 
-    count: number;             // Maximum number of failed jobs to keep
-    age: number;               // Maximum age in seconds of failed jobs to keep
-  };
-  stackTraceLimit?: number;    // Limit stack trace size for errors
+  delay?: number; // Delay before processing the job (in ms)
+  attempts?: number; // Number of attempts if job fails
+  backoff?:
+    | number
+    | {
+        // Backoff strategy for failed jobs
+        type: string; // Backoff type ("fixed" or "exponential")
+        delay: number; // Initial delay between retries (in ms)
+      };
+  lifo?: boolean; // Add job to the right end of the queue (Last In, First Out)
+  timeout?: number; // Job timeout (in ms)
+  priority?: number; // Job priority (higher numbers = higher priority)
+  removeOnComplete?:
+    | boolean
+    | number
+    | {
+        count: number; // Maximum number of completed jobs to keep
+        age: number; // Maximum age in seconds of completed jobs to keep
+      };
+  removeOnFail?:
+    | boolean
+    | number
+    | {
+        count: number; // Maximum number of failed jobs to keep
+        age: number; // Maximum age in seconds of failed jobs to keep
+      };
+  stackTraceLimit?: number; // Limit stack trace size for errors
   repeat?: {
-    pattern?: string;          // Cron pattern for recurring jobs
-    count?: number;            // Number of times the job should repeat
-    tz?: string;               // Timezone
+    pattern?: string; // Cron pattern for recurring jobs
+    count?: number; // Number of times the job should repeat
+    tz?: string; // Timezone
     endDate?: Date | string | number; // End date for recurring jobs
-    limit?: number;            // Maximum number of jobs to create
-    every?: number;            // Repeat every n milliseconds
-    cron?: string;             // Cron expression
+    limit?: number; // Maximum number of jobs to create
+    every?: number; // Repeat every n milliseconds
+    cron?: string; // Cron expression
   };
-  jobId?: string;              // Custom job ID
+  jobId?: string; // Custom job ID
 }
 ```
 
@@ -244,15 +255,15 @@ Example of using `onJobAdd` with job options:
 const handleAddJob = async (queueName, jobName, jobData, jobOptions) => {
   // Example job options
   const options = {
-    delay: 5000,           // 5 second delay
-    attempts: 3,           // Retry 3 times if failed
+    delay: 5000, // 5 second delay
+    attempts: 3, // Retry 3 times if failed
     removeOnComplete: true, // Remove job after completion
-    priority: 2            // Higher priority
+    priority: 2, // Higher priority
   };
-  
+
   const queue = new Queue(queueName, { connection: redisOptions });
   await queue.add(jobName, jobData, jobOptions || options);
-  
+
   // Refresh job list
   fetchJobs();
 };
@@ -262,11 +273,13 @@ const handleAddJob = async (queueName, jobName, jobData, jobOptions) => {
 <BullMQJobList
   // ...other props
   onJobAdd={handleAddJob}
-  availableQueues={['videoQueue', 'emailQueue', 'reportQueue']}
+  availableQueues={["videoQueue", "emailQueue", "reportQueue"]}
   // Optional: provide onQueuePauseToggle to enable queue pause/resume controls
-  onQueuePauseToggle={(queueName, isPaused) => console.log(`Queue ${queueName} is now ${isPaused ? 'paused' : 'active'}`)}
+  onQueuePauseToggle={(queueName, isPaused) =>
+    console.log(`Queue ${queueName} is now ${isPaused ? "paused" : "active"}`)
+  }
   // Without onQueuePauseToggle, queue states are displayed as read-only
-/>
+/>;
 ```
 
 ## Expected Properties for Job Objects
@@ -274,6 +287,7 @@ const handleAddJob = async (queueName, jobName, jobData, jobOptions) => {
 The `BullMQJobList` component is designed to work with both BullMQ `Job` objects and custom job formats. At minimum, job objects should include:
 
 ### Required Properties
+
 - `id: string | number`: Unique ID of the job
 - `name: string`: Name of the job
 - `timestamp: number`: Timestamp (milliseconds) of when the job was created
@@ -281,6 +295,7 @@ The `BullMQJobList` component is designed to work with both BullMQ `Job` objects
 - `queueName: string`: Name of the queue the job belongs to
 
 ### Optional Properties
+
 - `data?: any`: Data payload of the job
 - `opts?: object`: Options used when the job was created
 - `processedOn?: number`: Timestamp of when the job started processing
@@ -301,6 +316,7 @@ The `BullMQJobList` component is designed to work with both BullMQ `Job` objects
 - **`onFetchJobLogs((jobId: string) => Promise<string[]>)`:**
   This function is called when the "Logs" tab is opened in a job's detail modal. It receives the `jobId` as a parameter and expects a `Promise` that resolves to an array of strings (log lines) for that job.
   Example implementation:
+
   ```javascript
   const fetchLogsForJob = async (jobId) => {
     // const queue = new Queue('myQueueName'); // Get the relevant queue

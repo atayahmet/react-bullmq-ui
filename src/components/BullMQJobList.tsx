@@ -6,12 +6,10 @@ import {
   Button,
   Space,
   Typography,
-  Empty,
   Spin,
   Alert,
   Input,
   Select,
-  Radio,
   Row,
   Col,
   Card,
@@ -19,9 +17,6 @@ import {
   Popconfirm,
   Progress,
   Tooltip,
-  Modal,
-  List,
-  message,
 } from "antd";
 import type { TableProps, TableColumnsType } from "antd";
 import {
@@ -30,11 +25,8 @@ import {
   SearchOutlined,
   EyeOutlined,
   AppstoreOutlined,
-  SyncOutlined,
   PlusOutlined,
   SettingOutlined,
-  PauseCircleOutlined,
-  PlayCircleOutlined,
   CopyOutlined,
   CheckOutlined,
 } from "@ant-design/icons";
@@ -295,17 +287,17 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
     return tableData;
   }, [initialJobs, searchText, statusFilters, jobStates, selectedQueueFilter]);
 
-  // ID kopyalama işlemlerini takip etmek için bir state map kullanıyoruz
+  // Using a state map to track copied IDs
   const [copiedIds, setCopiedIds] = useState<Record<string, boolean>>({});
   
-  // ID kopyalama işlemi için handler
+  // Handler for ID copy operation
   const handleCopyId = (id: string) => {
     navigator.clipboard.writeText(String(id));
     
-    // Bu ID'yi kopyalandı olarak işaretle
+    // Mark this ID as copied
     setCopiedIds(prev => ({ ...prev, [id]: true }));
     
-    // 1 saniye sonra işareti kaldır
+    // Remove the mark after 1 second
     setTimeout(() => {
       setCopiedIds(prev => ({ ...prev, [id]: false }));
     }, 1000);
