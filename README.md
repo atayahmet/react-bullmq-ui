@@ -157,21 +157,21 @@ export default App;
 
 Below is a detailed list of props accepted by the `BullMQJobList` component:
 
-| Prop                 | Type                                                                                           | Required? | Default Value | Description                                                                                                                                                                                                                          |
-| -------------------- | ---------------------------------------------------------------------------------------------- | --------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `jobs`               | `Job[] \| CustomJob[]`                                                                         | Yes       | -             | Array of BullMQ `Job` objects or custom job objects to display. Job states are automatically detected using the `status` field and queue names are taken from the `queueName` field in each job.                                     |
-| `isLoading`          | `boolean`                                                                                      | No        | `false`       | Indicates if the job list is loading. Used for a general loading indicator when the entire list is empty or being updated.                                                                                                           |
-| `error`              | `string \| null`                                                                               | No        | `null`        | Displays an error message if an error occurs while loading jobs.                                                                                                                                                                     |
-| `onJobRetry`         | `(job: Job) => void`                                                                           | No        | `undefined`   | Callback invoked when a job is retried (via the "Retry" button).                                                                                                                                                                     |
-| `onJobDelete`        | `(job: Job) => void`                                                                           | No        | `undefined`   | Callback invoked when a job is deleted (via the "Delete" button). The `jobs` list is expected to be updated after this call.                                                                                                         |
-| `onFetchJobLogs`     | `(jobId: string) => Promise<string[]>`                                                         | No        | `undefined`   | Asynchronous callback invoked to fetch job logs when the "Logs" tab is opened in the job detail modal. Takes `jobId` and should return a `Promise` resolving to an array of log strings.                                             |
-| `defaultPageSize`    | `number`                                                                                       | No        | `10`          | Default number of jobs per page.                                                                                                                                                                                                     |
-| `availableQueues`    | `string[] \| Array<{name: string, isPaused: boolean}>`                                         | No        | `undefined`   | List of queue names or queue objects to display in the queue filter dropdown. Two formats are supported: simple array of strings or array of objects with pause states. If not provided, queue names are derived from jobs.           |
-| `refreshInterval`    | `number`                                                                                       | No        | `5000`        | Interval in milliseconds for auto refresh. This is used when auto refresh is enabled via the UI toggle.                                                                                                                              |
-| `onQueuePauseToggle` | `(queueName: string, isPaused: boolean) => void`                                               | No        | `undefined`   | Callback invoked when a queue is paused or resumed (via the queue dropdown actions). Takes `queueName` and `isPaused` parameters.                                                                                                    |
-| `onRefresh`          | `() => void`                                                                                   | No        | `undefined`   | Callback invoked when manual refresh is triggered (via the refresh button). Use this to update your `jobs` prop.                                                                                                                     |
-| `onJobAdd`           | `(queueName: string, jobName: string, jobData: any, jobOptions?: any) => Promise<void>`        | No        | `undefined`   | Callback invoked when a new job is added (via the "Add Job" button). Takes `queueName`, `jobName`, `jobData` and optional `jobOptions` parameters.                                                                                  |
-| `theme`              | `'light' \| 'dark' \| 'auto'`                                                                  | No        | `'light'`     | Sets the theme for the component. 'light' for light mode, 'dark' for dark mode, or 'auto' to use the system preference.                                                                                                              |
+| Prop                 | Type                                                                                    | Required? | Default Value | Description                                                                                                                                                                                                                 |
+| -------------------- | --------------------------------------------------------------------------------------- | --------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jobs`               | `Job[] \| CustomJob[]`                                                                  | Yes       | -             | Array of BullMQ `Job` objects or custom job objects to display. Job states are automatically detected using the `status` field and queue names are taken from the `queueName` field in each job.                            |
+| `isLoading`          | `boolean`                                                                               | No        | `false`       | Indicates if the job list is loading. Used for a general loading indicator when the entire list is empty or being updated.                                                                                                  |
+| `error`              | `string \| null`                                                                        | No        | `null`        | Displays an error message if an error occurs while loading jobs.                                                                                                                                                            |
+| `onJobRetry`         | `(job: Job) => void`                                                                    | No        | `undefined`   | Callback invoked when a job is retried (via the "Retry" button).                                                                                                                                                            |
+| `onJobDelete`        | `(job: Job) => void`                                                                    | No        | `undefined`   | Callback invoked when a job is deleted (via the "Delete" button). The `jobs` list is expected to be updated after this call.                                                                                                |
+| `onFetchJobLogs`     | `(jobId: string) => Promise<string[]>`                                                  | No        | `undefined`   | Asynchronous callback invoked to fetch job logs when the "Logs" tab is opened in the job detail modal. Takes `jobId` and should return a `Promise` resolving to an array of log strings.                                    |
+| `defaultPageSize`    | `number`                                                                                | No        | `10`          | Default number of jobs per page.                                                                                                                                                                                            |
+| `availableQueues`    | `string[] \| Array<{name: string, isPaused: boolean}>`                                  | No        | `undefined`   | List of queue names or queue objects to display in the queue filter dropdown. Two formats are supported: simple array of strings or array of objects with pause states. If not provided, queue names are derived from jobs. |
+| `refreshInterval`    | `number`                                                                                | No        | `5000`        | Interval in milliseconds for auto refresh. This is used when auto refresh is enabled via the UI toggle.                                                                                                                     |
+| `onQueuePauseToggle` | `(queueName: string, isPaused: boolean) => void`                                        | No        | `undefined`   | Callback invoked when a queue is paused or resumed (via the queue dropdown actions). Takes `queueName` and `isPaused` parameters.                                                                                           |
+| `onRefresh`          | `() => void`                                                                            | No        | `undefined`   | Callback invoked when manual refresh is triggered (via the refresh button). Use this to update your `jobs` prop.                                                                                                            |
+| `onJobAdd`           | `(queueName: string, jobName: string, jobData: any, jobOptions?: any) => Promise<void>` | No        | `undefined`   | Callback invoked when a new job is added (via the "Add Job" button). Takes `queueName`, `jobName`, `jobData` and optional `jobOptions` parameters.                                                                          |
+| `theme`              | `'light' \| 'dark' \| 'auto'`                                                           | No        | `'light'`     | Sets the theme for the component. 'light' for light mode, 'dark' for dark mode, or 'auto' to use the system preference.                                                                                                     |
 
 ### Action Buttons Display Logic
 
@@ -337,6 +337,81 @@ The `BullMQJobList` component is designed to work with both BullMQ `Job` objects
     fetchJobs();
   };
   ```
+
+## Testing
+
+This project uses Jest and React Testing Library for unit testing.
+
+### Running Tests
+
+To run the tests:
+
+```bash
+# Run tests once
+npm run test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with standard coverage
+npm run test:coverage
+
+# Run tests with enhanced coverage reporting (recommended)
+npm run test:coverage:enhanced
+
+# Debug failing tests
+npm run test:debug
+```
+
+### Coverage Configuration
+
+The Jest configuration includes comprehensive coverage reporting for both TypeScript (.ts) and React TypeScript (.tsx) files:
+
+```javascript
+collectCoverageFrom: [
+  'src/**/*.{ts,tsx}',   // Include all .ts and .tsx files in src/
+  '!**/node_modules/**', // Exclude node_modules
+  '!**/dist/**',         // Exclude build output
+  '!**/index.{ts,tsx}',  // Exclude index files
+  '!**/types.{ts,tsx}'   // Exclude type definition files
+],
+coverageProvider: 'v8',
+coverageReporters: ['text', 'lcov', 'clover', 'html'],
+forceCoverageMatch: ['**/*.{ts,tsx}']
+```
+
+We've implemented a comprehensive approach to ensure accurate coverage reporting for React components:
+
+1. **Enhanced Coverage Script**: A dedicated script (`npm run test:coverage:enhanced`) that optimizes Jest settings for proper coverage reporting
+2. **Component Rendering**: Components are actually rendered with minimal props in the coverage helper, ensuring their code is executed
+3. **Multi-tier Preloading**: Three different approaches to component loading, ensuring they work in different environments:
+   - TypeScript direct import with rendering
+   - Dynamic imports with async handling
+   - Legacy jest.requireActual imports
+
+This approach ensures that coverage reports accurately reflect code usage in both utility files and React components.
+
+#### Getting Accurate Coverage Reports
+
+For the most accurate coverage reports:
+
+```bash
+# Clear Jest cache first
+npm run test -- --clearCache
+
+# Then run coverage with no cache
+npm run test:coverage -- --no-cache
+```
+
+#### Troubleshooting Coverage Issues
+
+If you encounter zero coverage for `.tsx` files despite having tests, try these solutions:
+
+1. Ensure your tests are correctly importing and rendering the components
+2. Check the console output during testing for component loading errors
+3. Add any new components to both loader files in `__tests__/helpers/`
+4. Verify that both the component and its test have matching paths and imports
+5. Run with explicit coverage flag: `npm test -- --coverage --collectCoverageFrom='src/**/*.{ts,tsx}'`
 
 ## Contributing
 
