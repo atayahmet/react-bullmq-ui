@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Modal, Tabs, Descriptions, Tag, Space, Typography, Alert, Spin, List } from "antd";
+import { Modal, Tabs, Descriptions, Tag, Space, Typography, Alert, Spin, List, Tooltip } from "antd";
 import type { TabsProps } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import { JobTableDataType } from "../types";
 import { getStatusColor, formatTimestamp } from "../utils/formatters";
 
@@ -40,7 +41,17 @@ const JobDetailModal: React.FC<JobDetailModalProps> = ({
           <Text copyable>{jobData.id}</Text>
         </Descriptions.Item>
         <Descriptions.Item label="Name">{jobData.name}</Descriptions.Item>
-        <Descriptions.Item label="Queue">{jobData.queueName}</Descriptions.Item>
+        <Descriptions.Item label="Queue">
+          {jobData.queueName && jobData.queueName !== 'unknown' ? jobData.queueName : 
+            jobData.originalJob && (jobData.originalJob as any).queueQualifiedName ? 
+            (jobData.originalJob as any).queueQualifiedName.replace(/^bull:/, '') : 
+            'unknown'}
+          {jobData.queueName === 'unknown' && jobData.originalJob && 
+            <Tooltip title="Extracting queue name from original job">
+              <QuestionCircleOutlined style={{ marginLeft: 5 }} />
+            </Tooltip>
+          }
+        </Descriptions.Item>
         <Descriptions.Item label="Status">
           <Tag color={getStatusColor(jobStatus)}>{jobStatus.toUpperCase()}</Tag>
         </Descriptions.Item>

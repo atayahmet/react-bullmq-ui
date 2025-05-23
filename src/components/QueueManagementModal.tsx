@@ -2,6 +2,9 @@ import React from "react";
 import { Modal, List, Switch, Tag } from "antd";
 import { PauseCircleOutlined, PlayCircleOutlined } from "@ant-design/icons";
 
+// Note: This component receives queueNames that have already been extracted 
+// from their qualified format (bull:{queueName}) by the BullMQJobList component.
+
 interface QueueManagementModalProps {
   isVisible: boolean;
   onCancel: () => void;

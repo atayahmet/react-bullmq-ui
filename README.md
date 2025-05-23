@@ -69,8 +69,8 @@ const App = () => {
     // for (const queueName of queues) {
     //   const queue = new Queue(queueName, redisOptions);
     //   const jobs = await queue.getJobs(['active', 'waiting', 'completed', 'failed', 'delayed']);
-    //   // Add queueName to each job
-    //   allJobs.push(...jobs.map(job => ({ ...job, queueName })));
+    //   // Add queueQualifiedName to each job in the format "bull:{queueName}"
+    //   allJobs.push(...jobs.map(job => ({ ...job, queueQualifiedName: `bull:${queueName}` })));
     // }
     // return allJobs;
 
@@ -98,7 +98,9 @@ const App = () => {
   }, []);
 
   const handleJobAction = async (action, job) => {
-    console.log(`${action} job: ${job.id} from queue ${job.queueName}`);
+    // Extract queue name from the qualified name (format: "bull:{queueName}")
+    const extractedQueueName = job.queueQualifiedName ? job.queueQualifiedName.replace(/^bull:/, '') : 'unknown';
+    console.log(`${action} job: ${job.id} from queue ${extractedQueueName}`);
     // Actual actions should be implemented here (e.g., job.retry(), job.remove())
   };
 
@@ -159,7 +161,7 @@ Below is a detailed list of props accepted by the `BullMQJobList` component:
 
 | Prop                 | Type                                                                                    | Required? | Default Value | Description                                                                                                                                                                                                                 |
 | -------------------- | --------------------------------------------------------------------------------------- | --------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `jobs`               | `Job[] \| CustomJob[]`                                                                  | Yes       | -             | Array of BullMQ `Job` objects or custom job objects to display. Job states are automatically detected using the `status` field and queue names are taken from the `queueName` field in each job.                            |
+| `jobs`               | `Job[] \| CustomJob[]`                                                                  | Yes       | -             | Array of BullMQ `Job` objects or custom job objects to display. Job states are automatically detected using the `status` field and queue names are extracted from the `queueQualifiedName` field (format: "bull:{queueName}") in each job. |
 | `isLoading`          | `boolean`                                                                               | No        | `false`       | Indicates if the job list is loading. Used for a general loading indicator when the entire list is empty or being updated.                                                                                                  |
 | `error`              | `string \| null`                                                                        | No        | `null`        | Displays an error message if an error occurs while loading jobs.                                                                                                                                                            |
 | `onJobRetry`         | `(job: Job) => void`                                                                    | No        | `undefined`   | Callback invoked when a job is retried (via the "Retry" button).                                                                                                                                                            |
@@ -291,8 +293,7 @@ The `BullMQJobList` component is designed to work with both BullMQ `Job` objects
 - `id: string | number`: Unique ID of the job
 - `name: string`: Name of the job
 - `timestamp: number`: Timestamp (milliseconds) of when the job was created
-- `status: string`: Current status of the job (e.g., "waiting", "active", "completed", "failed", etc.)
-- `queueName: string`: Name of the queue the job belongs to
+- `queueQualifiedName: string`: Qualified name of the queue in format "bull:{queueName}" (BullMQ standard format)
 
 ### Optional Properties
 
@@ -306,6 +307,15 @@ The `BullMQJobList` component is designed to work with both BullMQ `Job` objects
 - `delay?: number`: Duration (milliseconds) for which the job is delayed
 - `progress?: number | object | string | boolean`: Progress of the job
 - `returnValue?: any` or `returnvalue?: any`: Return value if the job completed successfully
+
+The component automatically determines job status from BullMQ job properties:
+- `finishedOn` + `failedReason` present = "failed"
+- `finishedOn` present, no `failedReason` = "completed"
+- `processedOn` present, no `finishedOn` = "active"
+- `delay` set in the future = "delayed"
+- If job has `isPaused` = "paused"
+- If job has `parent` = "waiting-children"
+- Otherwise = "waiting"
 
 ## Action and Log Callbacks
 

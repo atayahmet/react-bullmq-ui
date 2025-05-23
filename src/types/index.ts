@@ -27,10 +27,10 @@ export interface ExtendedJobType extends Partial<Job> {
   id?: string;
   name?: string;
   timestamp?: number;
-  status?: string;
-  queueName?: string;
+  // status is now determined dynamically from job properties
+  queueQualifiedName?: string; // Standard BullMQ format "bull:{queueName}"
   returnValue?: any;
-  [key: string]: any; // Ekstra özelliklerin olmasına izin ver
+  [key: string]: any; // Allow for extra properties
 }
 
 // Data type for table rows
@@ -42,7 +42,7 @@ export interface JobTableDataType {
   processedOn?: number | null;
   finishedOn?: number | null;
   currentStatus: string;
-  queueName: string;
+  queueName: string; // This is now the extracted queue name from queueQualifiedName
   data?: any;
   opts?: any; // BullMQ.JobOptions
   failedReason?: string;
