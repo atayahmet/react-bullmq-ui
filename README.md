@@ -10,6 +10,7 @@
 - Sort by various fields (creation time, processing time, name, etc.)
 - Client-side pagination
 - View job details (data, failed reason, timestamps, options, return value, logs, etc.) in a modal
+- Visual insights and analytics showing job status distribution
 - Add new jobs through a user-friendly interface
 - Callback support for job actions (Retry, Delete)
 - Automatic job status detection

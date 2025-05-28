@@ -29,6 +29,7 @@ import {
   SettingOutlined,
   CopyOutlined,
   CheckOutlined,
+  PieChartOutlined,
 } from "@ant-design/icons";
 // Import CSS class names
 import * as classNames from "../utils/classNames";
@@ -39,6 +40,7 @@ import { ALL_QUEUES, ALL_STATES } from "../constants";
 import JobDetailModal from "./JobDetailModal";
 import AddJobModal from "./AddJobModal";
 import QueueManagementModal from "./QueueManagementModal";
+import InsightsModal from "./InsightsModal";
 import ThemeProvider from "./ThemeProvider";
 
 const { Text } = Typography;
@@ -85,6 +87,7 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
   const [isAddingJob, setIsAddingJob] = useState(false);
 
   const [isQueueManagementModalVisible, setIsQueueManagementModalVisible] = useState(false);
+  const [isInsightsModalVisible, setIsInsightsModalVisible] = useState(false);
 
   const [jobStates, setJobStates] = useState<Record<string, string>>({});
 
@@ -748,6 +751,13 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
                     Queue Management
                   </Button>
 
+                  <Button
+                    icon={<PieChartOutlined />}
+                    onClick={() => setIsInsightsModalVisible(true)}
+                  >
+                    Insights
+                  </Button>
+
                   {onJobAdd && (
                     <Button
                       type="primary"
@@ -815,6 +825,16 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
           queueNames={allQueueNamesForFilter}
           pauseStates={queuePauseStates}
           onQueuePauseToggle={onQueuePauseToggle}
+        />
+
+        <InsightsModal
+          isVisible={isInsightsModalVisible}
+          onCancel={() => setIsInsightsModalVisible(false)}
+          jobStatusData={availableJobStates.map(status => {
+            const count = processedAndFormattedJobs.filter(job => job.currentStatus === status).length;
+            return { status, count };
+          })}
+          totalJobs={processedAndFormattedJobs.length}
         />
       </div>
     </ThemeProvider>
