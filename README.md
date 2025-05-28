@@ -69,8 +69,8 @@ const App = () => {
     // for (const queueName of queues) {
     //   const queue = new Queue(queueName, redisOptions);
     //   const jobs = await queue.getJobs(['active', 'waiting', 'completed', 'failed', 'delayed']);
-    //   // Add queueQualifiedName to each job in the format "bull:{queueName}"
-    //   allJobs.push(...jobs.map(job => ({ ...job, queueQualifiedName: `bull:${queueName}` })));
+    //   // Add queueName to each job
+    //   allJobs.push(...jobs.map(job => ({ ...job, queueName })));
     // }
     // return allJobs;
 
@@ -98,9 +98,7 @@ const App = () => {
   }, []);
 
   const handleJobAction = async (action, job) => {
-    // Extract queue name from the qualified name (format: "bull:{queueName}")
-    const extractedQueueName = job.queueQualifiedName ? job.queueQualifiedName.replace(/^bull:/, '') : 'unknown';
-    console.log(`${action} job: ${job.id} from queue ${extractedQueueName}`);
+    console.log(`${action} job: ${job.id} from queue ${job.queueName}`);
     // Actual actions should be implemented here (e.g., job.retry(), job.remove())
   };
 
@@ -161,7 +159,7 @@ Below is a detailed list of props accepted by the `BullMQJobList` component:
 
 | Prop                 | Type                                                                                    | Required? | Default Value | Description                                                                                                                                                                                                                 |
 | -------------------- | --------------------------------------------------------------------------------------- | --------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `jobs`               | `Job[] \| CustomJob[]`                                                                  | Yes       | -             | Array of BullMQ `Job` objects or custom job objects to display. Job states are automatically detected using the `status` field and queue names are extracted from the `queueQualifiedName` field (format: "bull:{queueName}") in each job. |
+| `jobs`               | `Job[] \| CustomJob[]`                                                                  | Yes       | -             | Array of BullMQ `Job` objects or custom job objects to display. Job states are automatically detected using the `status` field and queue names are taken from the `queueName` field in each job.                            |
 | `isLoading`          | `boolean`                                                                               | No        | `false`       | Indicates if the job list is loading. Used for a general loading indicator when the entire list is empty or being updated.                                                                                                  |
 | `error`              | `string \| null`                                                                        | No        | `null`        | Displays an error message if an error occurs while loading jobs.                                                                                                                                                            |
 | `onJobRetry`         | `(job: Job) => void`                                                                    | No        | `undefined`   | Callback invoked when a job is retried (via the "Retry" button).                                                                                                                                                            |
@@ -284,6 +282,79 @@ const handleAddJob = async (queueName, jobName, jobData, jobOptions) => {
 />;
 ```
 
+## CSS Classes for Custom Styling
+
+BullMQ UI provides a set of CSS classes that you can use to customize the appearance of the component. These classes target different parts of the UI:
+
+### Container Classes
+
+- `bullmq-ui-container`: Main container that wraps all components
+- `bullmq-ui-filter-card`: Card component containing all filter options
+- `bullmq-ui-filters-container`: Container for all filter elements
+- `bullmq-ui-filter-row`: Row containing filter controls
+
+### Filter Component Classes
+
+- `bullmq-ui-search-col`: Column containing the search input
+- `bullmq-ui-search-input`: Search input field
+- `bullmq-ui-queue-filter-col`: Column containing the queue filter dropdown
+- `bullmq-ui-status-filter-col`: Column containing the status filter dropdown
+
+### Table Classes
+
+- `bullmq-ui-table`: Main table component
+- `bullmq-ui-loading`: Loading spinner container
+- `bullmq-ui-error`: Error message container
+- `bullmq-ui-status-tag`: Tag displaying job status
+
+### Button Classes
+
+- `bullmq-ui-action-button`: General action button class
+- `bullmq-ui-retry-button`: Retry button
+- `bullmq-ui-delete-button`: Delete button
+- `bullmq-ui-details-button`: Details button
+
+### Theme Support
+
+The component supports theming through the `data-theme` attribute on the container:
+
+```css
+/* Example of custom dark theme styles */
+[data-theme="dark"] .bullmq-ui-table .ant-table-thead > tr > th {
+  background-color: #1f1f1f;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .bullmq-ui-table .ant-table-tbody > tr:hover > td {
+  background-color: #111b26;
+}
+```
+
+### Usage Example
+
+You can override these classes in your CSS files:
+
+```css
+/* Example: Customize the status tags */
+.bullmq-ui-status-tag {
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 2px 10px;
+}
+
+/* Example: Custom table styles */
+.bullmq-ui-table .ant-table-thead > tr > th {
+  background-color: #f0f8ff;
+  font-weight: 600;
+}
+
+/* Example: Custom filter card */
+.bullmq-ui-filter-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+}
+```
+
 ## Expected Properties for Job Objects
 
 The `BullMQJobList` component is designed to work with both BullMQ `Job` objects and custom job formats. At minimum, job objects should include:
@@ -293,7 +364,8 @@ The `BullMQJobList` component is designed to work with both BullMQ `Job` objects
 - `id: string | number`: Unique ID of the job
 - `name: string`: Name of the job
 - `timestamp: number`: Timestamp (milliseconds) of when the job was created
-- `queueQualifiedName: string`: Qualified name of the queue in format "bull:{queueName}" (BullMQ standard format)
+- `status: string`: Current status of the job (e.g., "waiting", "active", "completed", "failed", etc.)
+- `queueName: string`: Name of the queue the job belongs to
 
 ### Optional Properties
 
@@ -307,15 +379,6 @@ The `BullMQJobList` component is designed to work with both BullMQ `Job` objects
 - `delay?: number`: Duration (milliseconds) for which the job is delayed
 - `progress?: number | object | string | boolean`: Progress of the job
 - `returnValue?: any` or `returnvalue?: any`: Return value if the job completed successfully
-
-The component automatically determines job status from BullMQ job properties:
-- `finishedOn` + `failedReason` present = "failed"
-- `finishedOn` present, no `failedReason` = "completed"
-- `processedOn` present, no `finishedOn` = "active"
-- `delay` set in the future = "delayed"
-- If job has `isPaused` = "paused"
-- If job has `parent` = "waiting-children"
-- Otherwise = "waiting"
 
 ## Action and Log Callbacks
 
@@ -357,37 +420,7 @@ This project uses Jest and React Testing Library for unit testing.
 To run the tests:
 
 ```bash
-# Run tests once
 npm run test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with standard coverage
-npm run test:coverage
-
-# Run tests with enhanced coverage reporting (recommended)
-npm run test:coverage:enhanced
-
-# Debug failing tests
-npm run test:debug
-```
-
-### Coverage Configuration
-
-The Jest configuration includes comprehensive coverage reporting for both TypeScript (.ts) and React TypeScript (.tsx) files:
-
-```javascript
-collectCoverageFrom: [
-  'src/**/*.{ts,tsx}',   // Include all .ts and .tsx files in src/
-  '!**/node_modules/**', // Exclude node_modules
-  '!**/dist/**',         // Exclude build output
-  '!**/index.{ts,tsx}',  // Exclude index files
-  '!**/types.{ts,tsx}'   // Exclude type definition files
-],
-coverageProvider: 'v8',
-coverageReporters: ['text', 'lcov', 'clover', 'html'],
-forceCoverageMatch: ['**/*.{ts,tsx}']
 ```
 
 We've implemented a comprehensive approach to ensure accurate coverage reporting for React components:
@@ -400,28 +433,6 @@ We've implemented a comprehensive approach to ensure accurate coverage reporting
    - Legacy jest.requireActual imports
 
 This approach ensures that coverage reports accurately reflect code usage in both utility files and React components.
-
-#### Getting Accurate Coverage Reports
-
-For the most accurate coverage reports:
-
-```bash
-# Clear Jest cache first
-npm run test -- --clearCache
-
-# Then run coverage with no cache
-npm run test:coverage -- --no-cache
-```
-
-#### Troubleshooting Coverage Issues
-
-If you encounter zero coverage for `.tsx` files despite having tests, try these solutions:
-
-1. Ensure your tests are correctly importing and rendering the components
-2. Check the console output during testing for component loading errors
-3. Add any new components to both loader files in `__tests__/helpers/`
-4. Verify that both the component and its test have matching paths and imports
-5. Run with explicit coverage flag: `npm test -- --coverage --collectCoverageFrom='src/**/*.{ts,tsx}'`
 
 ## Contributing
 

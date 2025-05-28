@@ -1,0 +1,117 @@
+/* BullMQ UI Custom Styles */
+
+/* Main container */
+.bullmq-ui-container {
+  font-family: inherit;
+}
+
+/* Filter card styles */
+.bullmq-ui-filter-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.bullmq-ui-filters-container {
+  width: 100%;
+}
+
+.bullmq-ui-filter-row {
+  width: 100%;
+}
+
+.bullmq-ui-search-col .bullmq-ui-search-input {
+  border-radius: 4px;
+}
+
+/* Queue filter column */
+.bullmq-ui-queue-filter-col .ant-select {
+  width: 100%;
+}
+
+/* Status filter column */
+.bullmq-ui-status-filter-col .ant-select {
+  width: 100%;
+}
+
+/* Jobs count section */
+.bullmq-ui-jobs-count {
+  margin: 10px 0;
+}
+
+/* Actions section */
+.bullmq-ui-actions-section {
+  margin-top: 10px;
+}
+
+/* Table styling */
+.bullmq-ui-table {
+  margin-top: 16px;
+}
+
+.bullmq-ui-table .ant-table-thead > tr > th {
+  background-color: #f7f7f7;
+  font-weight: 600;
+}
+
+/* Dark theme table header styling */
+[data-theme="dark"] .bullmq-ui-table .ant-table-thead > tr > th {
+  background-color: #1f1f1f;
+  color: #fff;
+}
+
+.bullmq-ui-table .ant-table-tbody > tr:hover > td {
+  background-color: #f0f7ff;
+}
+
+/* Dark theme table row hover styling */
+[data-theme="dark"] .bullmq-ui-table .ant-table-tbody > tr:hover > td {
+  background-color: #111b26;
+}
+
+/* Button styling */
+.bullmq-ui-action-button {
+  margin-right: 5px;
+}
+
+.bullmq-ui-retry-button {
+  margin-right: 5px;
+}
+
+.bullmq-ui-delete-button {
+  margin-right: 5px;
+}
+
+.bullmq-ui-details-button {
+  margin-right: 5px;
+}
+
+/* Modal styling */
+.bullmq-ui-modal .ant-modal-content {
+  border-radius: 4px;
+}
+
+.bullmq-ui-modal .ant-modal-header {
+  border-radius: 4px 4px 0 0;
+}
+
+.bullmq-ui-modal-tabs .ant-tabs-nav {
+  margin-bottom: 16px;
+}
+
+/* Loading spinner */
+.bullmq-ui-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* Error alert */
+.bullmq-ui-error {
+  margin: 20px 0;
+}
+
+/* Status tags */
+.bullmq-ui-status-tag {
+  text-transform: uppercase;
+}

@@ -4,6 +4,8 @@ import type { TabsProps } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { JobTableDataType } from "../types";
 import { getStatusColor, formatTimestamp } from "../utils/formatters";
+// Import CSS class names
+import * as classNames from "../utils/classNames";
 
 const { Text, Paragraph } = Typography;
 
@@ -41,17 +43,7 @@ const JobDetailModal: React.FC<JobDetailModalProps> = ({
           <Text copyable>{jobData.id}</Text>
         </Descriptions.Item>
         <Descriptions.Item label="Name">{jobData.name}</Descriptions.Item>
-        <Descriptions.Item label="Queue">
-          {jobData.queueName && jobData.queueName !== 'unknown' ? jobData.queueName : 
-            jobData.originalJob && (jobData.originalJob as any).queueQualifiedName ? 
-            (jobData.originalJob as any).queueQualifiedName.replace(/^bull:/, '') : 
-            'unknown'}
-          {jobData.queueName === 'unknown' && jobData.originalJob && 
-            <Tooltip title="Extracting queue name from original job">
-              <QuestionCircleOutlined style={{ marginLeft: 5 }} />
-            </Tooltip>
-          }
-        </Descriptions.Item>
+        <Descriptions.Item label="Queue">{jobData.queueName}</Descriptions.Item>
         <Descriptions.Item label="Status">
           <Tag color={getStatusColor(jobStatus)}>{jobStatus.toUpperCase()}</Tag>
         </Descriptions.Item>
@@ -232,8 +224,15 @@ const JobDetailModal: React.FC<JobDetailModalProps> = ({
       footer={null}
       width={800}
       destroyOnHidden
+      className={classNames.MODAL_CLASS}
     >
-      <Tabs activeKey={activeTabKey} onChange={handleTabChange} items={items} type="card" />
+      <Tabs 
+        activeKey={activeTabKey} 
+        onChange={handleTabChange} 
+        items={items} 
+        type="card"
+        className={classNames.MODAL_TABS_CLASS} 
+      />
     </Modal>
   );
 };

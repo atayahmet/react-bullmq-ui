@@ -16,6 +16,8 @@ import {
 } from "antd";
 import { PlusOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { JobOptions } from "../types";
+// Import CSS class names
+import * as classNames from "../utils/classNames";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -25,12 +27,7 @@ const { Group: RadioGroup } = Radio;
 interface AddJobModalProps {
   isVisible: boolean;
   onCancel: () => void;
-  onAdd: (
-    queueName: string,
-    jobName: string,
-    jobData: any,
-    jobOptions?: JobOptions
-  ) => Promise<void>;
+  onAdd: (queueName: string, jobName: string, jobData: any, jobOptions?: JobOptions) => Promise<void>;
   availableQueueNames?: string[];
   isLoading: boolean;
 }
@@ -45,12 +42,8 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
   const [form] = Form.useForm();
   const [advancedOptions, setAdvancedOptions] = useState(false);
   const [backoffType, setBackoffType] = useState<"fixed" | "exponential">("fixed");
-  const [removeOnCompleteType, setRemoveOnCompleteType] = useState<"boolean" | "count" | "object">(
-    "boolean"
-  );
-  const [removeOnFailType, setRemoveOnFailType] = useState<"boolean" | "count" | "object">(
-    "boolean"
-  );
+  const [removeOnCompleteType, setRemoveOnCompleteType] = useState<"boolean" | "count" | "object">("boolean");
+  const [removeOnFailType, setRemoveOnFailType] = useState<"boolean" | "count" | "object">("boolean");
   const [repeatEnabled, setRepeatEnabled] = useState(false);
   const [repeatType, setRepeatType] = useState<"every" | "cron">("every");
 
@@ -84,9 +77,9 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
           if (backoffType === "fixed") {
             jobOptions.backoff = values.backoffDelay || 1000;
           } else {
-            jobOptions.backoff = {
-              type: "exponential",
-              delay: values.backoffDelay || 1000,
+            jobOptions.backoff = { 
+              type: "exponential", 
+              delay: values.backoffDelay || 1000 
             };
           }
         }
@@ -99,7 +92,7 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
         } else if (removeOnCompleteType === "object") {
           jobOptions.removeOnComplete = {
             count: values.removeOnCompleteObjectCount || 1000,
-            age: values.removeOnCompleteObjectAge || 3600,
+            age: values.removeOnCompleteObjectAge || 3600
           };
         }
 
@@ -111,7 +104,7 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
         } else if (removeOnFailType === "object") {
           jobOptions.removeOnFail = {
             count: values.removeOnFailObjectCount || 1000,
-            age: values.removeOnFailObjectAge || 3600,
+            age: values.removeOnFailObjectAge || 3600
           };
         }
 
@@ -142,16 +135,17 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
       form.resetFields();
       onCancel();
     } catch (error) {
-      // Form validation error or job add error - handle silently
+      // Form validation error or job add error
+      console.error("Failed to add job:", error);
     }
   };
 
   return (
-    <Modal
-      title="Add New Job"
-      open={isVisible}
-      onCancel={onCancel}
-      footer={null}
+    <Modal 
+      title="Add New Job" 
+      open={isVisible} 
+      onCancel={onCancel} 
+      footer={null} 
       destroyOnHidden
       width={700}
     >
@@ -221,7 +215,11 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
               </Form.Item>
 
               <Form.Item name="attempts" label="Attempts">
-                <InputNumber min={1} placeholder="Number of attempts" style={{ width: "100%" }} />
+                <InputNumber
+                  min={1}
+                  placeholder="Number of attempts"
+                  style={{ width: "100%" }}
+                />
               </Form.Item>
 
               <Form.Item name="timeout" label="Timeout (ms)">
@@ -240,7 +238,11 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
               </Form.Item>
 
               <Form.Item name="stackTraceLimit" label="Stack Trace Limit">
-                <InputNumber min={0} placeholder="Stack trace limit" style={{ width: "100%" }} />
+                <InputNumber
+                  min={0}
+                  placeholder="Stack trace limit"
+                  style={{ width: "100%" }}
+                />
               </Form.Item>
 
               <Form.Item name="lifo" label="LIFO" valuePropName="checked">
@@ -252,7 +254,7 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
               <Form.Item name="backoffEnabled" label="Enable Backoff" valuePropName="checked">
                 <Switch onChange={(checked) => form.setFieldsValue({ backoffEnabled: checked })} />
               </Form.Item>
-
+              
               <Form.Item name="backoffType" label="Backoff Type" initialValue="fixed">
                 <RadioGroup onChange={(e) => setBackoffType(e.target.value)} value={backoffType}>
                   <Radio value="fixed">Fixed</Radio>
@@ -271,28 +273,21 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
 
             <Panel header="Cleanup Options" key="cleanup">
               <Divider orientation="left">Remove on Complete</Divider>
-
+              
               <Form.Item name="removeOnCompleteType" label="Type" initialValue="boolean">
-                <RadioGroup
-                  onChange={(e) => setRemoveOnCompleteType(e.target.value)}
-                  value={removeOnCompleteType}
-                >
+                <RadioGroup onChange={(e) => setRemoveOnCompleteType(e.target.value)} value={removeOnCompleteType}>
                   <Radio value="boolean">Boolean</Radio>
                   <Radio value="count">Count</Radio>
                   <Radio value="object">Advanced</Radio>
                 </RadioGroup>
               </Form.Item>
-
+              
               {removeOnCompleteType === "boolean" && (
-                <Form.Item
-                  name="removeOnComplete"
-                  label="Remove on Complete"
-                  valuePropName="checked"
-                >
+                <Form.Item name="removeOnComplete" label="Remove on Complete" valuePropName="checked">
                   <Switch />
                 </Form.Item>
               )}
-
+              
               {removeOnCompleteType === "count" && (
                 <Form.Item name="removeOnCompleteCount" label="Max Jobs to Keep">
                   <InputNumber
@@ -302,7 +297,7 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
                   />
                 </Form.Item>
               )}
-
+              
               {removeOnCompleteType === "object" && (
                 <>
                   <Form.Item name="removeOnCompleteObjectCount" label="Max Jobs to Keep">
@@ -312,7 +307,7 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
                       style={{ width: "100%" }}
                     />
                   </Form.Item>
-
+                  
                   <Form.Item name="removeOnCompleteObjectAge" label="Max Age (seconds)">
                     <InputNumber
                       min={0}
@@ -324,24 +319,21 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
               )}
 
               <Divider orientation="left">Remove on Fail</Divider>
-
+              
               <Form.Item name="removeOnFailType" label="Type" initialValue="boolean">
-                <RadioGroup
-                  onChange={(e) => setRemoveOnFailType(e.target.value)}
-                  value={removeOnFailType}
-                >
+                <RadioGroup onChange={(e) => setRemoveOnFailType(e.target.value)} value={removeOnFailType}>
                   <Radio value="boolean">Boolean</Radio>
                   <Radio value="count">Count</Radio>
                   <Radio value="object">Advanced</Radio>
                 </RadioGroup>
               </Form.Item>
-
+              
               {removeOnFailType === "boolean" && (
                 <Form.Item name="removeOnFail" label="Remove on Fail" valuePropName="checked">
                   <Switch />
                 </Form.Item>
               )}
-
+              
               {removeOnFailType === "count" && (
                 <Form.Item name="removeOnFailCount" label="Max Failed Jobs to Keep">
                   <InputNumber
@@ -351,7 +343,7 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
                   />
                 </Form.Item>
               )}
-
+              
               {removeOnFailType === "object" && (
                 <>
                   <Form.Item name="removeOnFailObjectCount" label="Max Failed Jobs to Keep">
@@ -361,7 +353,7 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
                       style={{ width: "100%" }}
                     />
                   </Form.Item>
-
+                  
                   <Form.Item name="removeOnFailObjectAge" label="Max Age (seconds)">
                     <InputNumber
                       min={0}
@@ -377,7 +369,7 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
               <Form.Item name="repeatEnabled" valuePropName="checked" label="Enable Repeating Job">
                 <Switch onChange={(checked) => setRepeatEnabled(checked)} />
               </Form.Item>
-
+              
               {repeatEnabled && (
                 <>
                   <Form.Item name="repeatType" label="Repeat Type" initialValue="every">
@@ -386,7 +378,7 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
                       <Radio value="cron">Cron Expression</Radio>
                     </RadioGroup>
                   </Form.Item>
-
+                  
                   {repeatType === "every" && (
                     <Form.Item name="repeatEvery" label="Repeat Every (ms)">
                       <InputNumber
@@ -396,10 +388,10 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
                       />
                     </Form.Item>
                   )}
-
+                  
                   {repeatType === "cron" && (
-                    <Form.Item
-                      name="repeatCron"
+                    <Form.Item 
+                      name="repeatCron" 
                       label={
                         <Space>
                           Cron Expression
@@ -412,7 +404,7 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
                       <Input placeholder="Cron expression (e.g. * * * * *)" />
                     </Form.Item>
                   )}
-
+                  
                   <Form.Item name="repeatLimit" label="Repeat Limit">
                     <InputNumber
                       min={0}
@@ -420,11 +412,11 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
                       style={{ width: "100%" }}
                     />
                   </Form.Item>
-
+                  
                   <Form.Item name="repeatTz" label="Timezone">
                     <Input placeholder="Timezone (e.g. Europe/London)" />
                   </Form.Item>
-
+                  
                   <Form.Item name="repeatEndDate" label="End Date">
                     <DatePicker showTime style={{ width: "100%" }} />
                   </Form.Item>
@@ -435,7 +427,7 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
         )}
 
         <Divider />
-
+        
         <Form.Item>
           <Space style={{ display: "flex", justifyContent: "flex-end" }}>
             <Button onClick={onCancel}>Cancel</Button>
