@@ -74,5 +74,6 @@ export interface BullMQJobListProps {
     jobOptions?: JobOptions
   ) => Promise<void>; // New callback for adding jobs
   onQueuePauseToggle?: (queueName: string, isPaused: boolean) => void; // Callback for queue pause/resume
+  onQueueJobClear?: (queueName: string, status: string) => Promise<void>; // Callback for clearing jobs from queue
   theme?: 'light' | 'dark' | 'auto'; // Theme mode for UI components
 }

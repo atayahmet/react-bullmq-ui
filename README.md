@@ -10,8 +10,8 @@
 - Sort by various fields (creation time, processing time, name, etc.)
 - Client-side pagination
 - View job details (data, failed reason, timestamps, options, return value, logs, etc.) in a modal
-- Visual insights and analytics showing job status distribution
 - Add new jobs through a user-friendly interface
+- Manage queues: pause/resume and clear jobs by status
 - Callback support for job actions (Retry, Delete)
 - Automatic job status detection
 - Support for both BullMQ Job objects and custom job formats
@@ -143,6 +143,14 @@ const App = () => {
         onQueuePauseToggle={(queueName, isPaused) =>
           console.log(`Queue ${queueName} is now ${isPaused ? "paused" : "active"}`)
         }
+        onQueueJobClear={async (queueName, status) => {
+          console.log(`Clearing jobs with status: ${status} from queue: ${queueName}`);
+          // Actual implementation using BullMQ:
+          // const queue = new Queue(queueName, { connection: redisOptions });
+          // await queue.clean(0, 1000, status); // Clean all jobs of the specified status
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+          // No need to manually refresh - BullMQJobList will automatically call onRefresh
+        }}
         // If onQueuePauseToggle is not provided, the Queue Management modal will show queue states as read-only
         defaultPageSize={10}
         theme="light" // Or 'dark' or 'auto' for system preference
@@ -170,6 +178,7 @@ Below is a detailed list of props accepted by the `BullMQJobList` component:
 | `availableQueues`    | `string[] \| Array<{name: string, isPaused: boolean}>`                                  | No        | `undefined`   | List of queue names or queue objects to display in the queue filter dropdown. Two formats are supported: simple array of strings or array of objects with pause states. If not provided, queue names are derived from jobs. |
 | `refreshInterval`    | `number`                                                                                | No        | `5000`        | Interval in milliseconds for auto refresh. This is used when auto refresh is enabled via the UI toggle.                                                                                                                     |
 | `onQueuePauseToggle` | `(queueName: string, isPaused: boolean) => void`                                        | No        | `undefined`   | Callback invoked when a queue is paused or resumed (via the queue dropdown actions). Takes `queueName` and `isPaused` parameters.                                                                                           |
+| `onQueueJobClear`   | `(queueName: string, status: string) => Promise<void>`                                  | No        | `undefined`   | Callback invoked when jobs are cleared from a queue by status. Takes `queueName` and a job status to clear. When provided, enables the job clearing feature in the Queue Management modal.                      |
 | `onRefresh`          | `() => void`                                                                            | No        | `undefined`   | Callback invoked when manual refresh is triggered (via the refresh button). Use this to update your `jobs` prop.                                                                                                            |
 | `onJobAdd`           | `(queueName: string, jobName: string, jobData: any, jobOptions?: any) => Promise<void>` | No        | `undefined`   | Callback invoked when a new job is added (via the "Add Job" button). Takes `queueName`, `jobName`, `jobData` and optional `jobOptions` parameters.                                                                          |
 | `theme`              | `'light' \| 'dark' \| 'auto'`                                                           | No        | `'light'`     | Sets the theme for the component. 'light' for light mode, 'dark' for dark mode, or 'auto' to use the system preference.                                                                                                     |
@@ -283,79 +292,6 @@ const handleAddJob = async (queueName, jobName, jobData, jobOptions) => {
 />;
 ```
 
-## CSS Classes for Custom Styling
-
-BullMQ UI provides a set of CSS classes that you can use to customize the appearance of the component. These classes target different parts of the UI:
-
-### Container Classes
-
-- `bullmq-ui-container`: Main container that wraps all components
-- `bullmq-ui-filter-card`: Card component containing all filter options
-- `bullmq-ui-filters-container`: Container for all filter elements
-- `bullmq-ui-filter-row`: Row containing filter controls
-
-### Filter Component Classes
-
-- `bullmq-ui-search-col`: Column containing the search input
-- `bullmq-ui-search-input`: Search input field
-- `bullmq-ui-queue-filter-col`: Column containing the queue filter dropdown
-- `bullmq-ui-status-filter-col`: Column containing the status filter dropdown
-
-### Table Classes
-
-- `bullmq-ui-table`: Main table component
-- `bullmq-ui-loading`: Loading spinner container
-- `bullmq-ui-error`: Error message container
-- `bullmq-ui-status-tag`: Tag displaying job status
-
-### Button Classes
-
-- `bullmq-ui-action-button`: General action button class
-- `bullmq-ui-retry-button`: Retry button
-- `bullmq-ui-delete-button`: Delete button
-- `bullmq-ui-details-button`: Details button
-
-### Theme Support
-
-The component supports theming through the `data-theme` attribute on the container:
-
-```css
-/* Example of custom dark theme styles */
-[data-theme="dark"] .bullmq-ui-table .ant-table-thead > tr > th {
-  background-color: #1f1f1f;
-  color: #ffffff;
-}
-
-[data-theme="dark"] .bullmq-ui-table .ant-table-tbody > tr:hover > td {
-  background-color: #111b26;
-}
-```
-
-### Usage Example
-
-You can override these classes in your CSS files:
-
-```css
-/* Example: Customize the status tags */
-.bullmq-ui-status-tag {
-  font-weight: bold;
-  border-radius: 12px;
-  padding: 2px 10px;
-}
-
-/* Example: Custom table styles */
-.bullmq-ui-table .ant-table-thead > tr > th {
-  background-color: #f0f8ff;
-  font-weight: 600;
-}
-
-/* Example: Custom filter card */
-.bullmq-ui-filter-card {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-}
-```
-
 ## Expected Properties for Job Objects
 
 The `BullMQJobList` component is designed to work with both BullMQ `Job` objects and custom job formats. At minimum, job objects should include:
@@ -412,6 +348,100 @@ The `BullMQJobList` component is designed to work with both BullMQ `Job` objects
   };
   ```
 
+## Job Cleaning Feature
+
+The `onQueueJobClear` prop enables a powerful feature for clearing jobs from queues based on their status. This is particularly useful for maintenance tasks like removing completed jobs, clearing failed jobs, or resetting a queue.
+
+### How It Works
+
+When you provide the `onQueueJobClear` callback function to the `BullMQJobList` component, a job cleaning interface will appear in the Queue Management modal for each queue. This interface consists of:
+
+1. A dropdown to select which job status to clear (e.g., "completed", "failed", "active", etc.)
+2. A "Clear Jobs" button that triggers the operation after confirmation
+
+### Implementation Example
+
+Here's how to implement the job cleaning feature in your application:
+
+```jsx
+<BullMQJobList
+  // ...other props
+  onQueueJobClear={async (queueName, status) => {
+    try {
+      // Get a reference to the queue
+      const queue = new Queue(queueName, { connection: redisOptions });
+      
+      // Clear all jobs with the selected status
+      // Parameters: grace period (0), limit (1000), status
+      await queue.clean(0, 1000, status);
+      
+      // Optionally show success message
+      message.success(`Successfully cleared ${status} jobs from ${queueName}`);
+      
+      // No need to manually refresh - BullMQJobList will automatically call onRefresh
+    } catch (error) {
+      console.error(`Failed to clear jobs: ${error.message}`);
+      message.error(`Failed to clear jobs: ${error.message}`);
+    }
+  }}
+/>
+```
+
+### Supported Job Statuses
+
+The following job statuses can be cleared:
+
+- `failed`: Jobs that have failed and exceeded their retry attempts
+- `completed`: Jobs that have successfully completed
+- `active`: Jobs that are currently being processed
+- `delayed`: Jobs scheduled to be processed in the future
+- `wait`: Jobs waiting to be processed
+- `paused`: Jobs in paused queues
+- `prioritized`: Jobs with higher priority
+
+### Safety Considerations
+
+When implementing the `onQueueJobClear` callback, consider these safety practices:
+
+1. Always confirm the action with the user before proceeding (the component handles this with a confirmation dialog)
+2. Consider temporarily pausing the queue before clearing jobs to prevent conflicts
+3. Apply appropriate limits to avoid performance issues when clearing large numbers of jobs
+4. Implement proper error handling to recover from failed operations
+5. Refresh the job list after clearing jobs to maintain UI consistency
+
+### Example with Queue Pausing
+
+For maximum safety when cleaning active jobs, you might want to temporarily pause the queue:
+
+```jsx
+onQueueJobClear={async (queueName, status) => {
+  try {
+    const queue = new Queue(queueName, { connection: redisOptions });
+    
+    // If clearing active jobs, pause the queue first
+    let wasPaused = false;
+    if (status === 'active') {
+      wasPaused = await isQueuePaused(queueName);
+      if (!wasPaused) {
+        await queue.pause();
+      }
+    }
+    
+    // Clear the jobs
+    await queue.clean(0, 1000, status);
+    
+    // Resume the queue if we paused it
+    if (status === 'active' && !wasPaused) {
+      await queue.resume();
+    }
+    
+    // No need to manually refresh - BullMQJobList will automatically call onRefresh
+  } catch (error) {
+    console.error(`Failed to clear jobs: ${error.message}`);
+  }
+}}
+```
+
 ## Testing
 
 This project uses Jest and React Testing Library for unit testing.
@@ -421,19 +451,12 @@ This project uses Jest and React Testing Library for unit testing.
 To run the tests:
 
 ```bash
+# Run tests once
 npm run test
+
+# Run tests in watch mode
+npm run test:watch
 ```
-
-We've implemented a comprehensive approach to ensure accurate coverage reporting for React components:
-
-1. **Enhanced Coverage Script**: A dedicated script (`npm run test:coverage:enhanced`) that optimizes Jest settings for proper coverage reporting
-2. **Component Rendering**: Components are actually rendered with minimal props in the coverage helper, ensuring their code is executed
-3. **Multi-tier Preloading**: Three different approaches to component loading, ensuring they work in different environments:
-   - TypeScript direct import with rendering
-   - Dynamic imports with async handling
-   - Legacy jest.requireActual imports
-
-This approach ensures that coverage reports accurately reflect code usage in both utility files and React components.
 
 ## Contributing
 

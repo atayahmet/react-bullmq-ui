@@ -37,6 +37,26 @@ const MockQueueManagementModal = (props: any) => {
       >
         Empty Queue
       </button>
+      {props.onQueueJobClear && (
+        <div data-testid="job-clear-controls">
+          <select 
+            data-testid="status-select"
+            onChange={(e) => props.onStatusChange && props.onStatusChange(props.selectedQueue, e.target.value)}
+          >
+            <option value="">Select a status</option>
+            <option value="failed">FAILED</option>
+            <option value="completed">COMPLETED</option>
+            <option value="active">ACTIVE</option>
+          </select>
+          <button
+            data-testid="clear-jobs-button"
+            onClick={() => props.selectedQueue && props.selectedStatus && props.onQueueJobClear(props.selectedQueue, props.selectedStatus)}
+            disabled={!props.selectedQueue || !props.selectedStatus}
+          >
+            Clear Jobs
+          </button>
+        </div>
+      )}
       <div data-testid="is-loading">{String(!!props.isLoading)}</div>
     </div>
   ) : null;
@@ -83,6 +103,8 @@ describe('QueueManagementModal Component', () => {
   const onCancel = jest.fn();
   const onPauseQueue = jest.fn(() => Promise.resolve());
   const onEmptyQueue = jest.fn(() => Promise.resolve());
+  const onQueueJobClear = jest.fn(() => Promise.resolve());
+  const onStatusChange = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -233,5 +255,92 @@ describe('QueueManagementModal Component', () => {
     expect(getByTestId('pause-button').hasAttribute('disabled')).toBe(true);
     expect(getByTestId('resume-button').hasAttribute('disabled')).toBe(true);
     expect(getByTestId('empty-button').hasAttribute('disabled')).toBe(true);
+  });
+
+  // Job Clearing Feature Tests
+  test('shows job clear controls when onQueueJobClear is provided', () => {
+    const { getByTestId, queryByTestId } = render(
+      <MockQueueManagementModal
+        isVisible={true}
+        queues={mockQueues}
+        onCancel={onCancel}
+        onQueueJobClear={onQueueJobClear}
+      />
+    );
+
+    // Job clear controls should be visible
+    expect(getByTestId('job-clear-controls')).toBeTruthy();
+    expect(getByTestId('status-select')).toBeTruthy();
+    expect(getByTestId('clear-jobs-button')).toBeTruthy();
+  });
+
+  test('hides job clear controls when onQueueJobClear is not provided', () => {
+    const { queryByTestId } = render(
+      <MockQueueManagementModal
+        isVisible={true}
+        queues={mockQueues}
+        onCancel={onCancel}
+      />
+    );
+
+    // Job clear controls should not be visible
+    expect(queryByTestId('job-clear-controls')).toBeNull();
+  });
+
+  test('calls onQueueJobClear with correct parameters when clear button is clicked', () => {
+    const { getByTestId } = render(
+      <MockQueueManagementModal
+        isVisible={true}
+        queues={mockQueues}
+        selectedQueue="queue1"
+        selectedStatus="failed"
+        onCancel={onCancel}
+        onQueueJobClear={onQueueJobClear}
+        onStatusChange={onStatusChange}
+      />
+    );
+
+    // Click the clear jobs button
+    getByTestId('clear-jobs-button').click();
+    
+    // Verify onQueueJobClear was called with the correct parameters
+    expect(onQueueJobClear).toHaveBeenCalledTimes(1);
+    expect(onQueueJobClear).toHaveBeenCalledWith('queue1', 'failed');
+  });
+
+  test('disables clear jobs button when no status is selected', () => {
+    const { getByTestId } = render(
+      <MockQueueManagementModal
+        isVisible={true}
+        queues={mockQueues}
+        selectedQueue="queue1"
+        onCancel={onCancel}
+        onQueueJobClear={onQueueJobClear}
+      />
+    );
+
+    // Clear jobs button should be disabled when no status is selected
+    expect(getByTestId('clear-jobs-button').hasAttribute('disabled')).toBe(true);
+  });
+
+  test('updates selected status when status select changes', () => {
+    const { getByTestId } = render(
+      <MockQueueManagementModal
+        isVisible={true}
+        queues={mockQueues}
+        selectedQueue="queue1"
+        onCancel={onCancel}
+        onQueueJobClear={onQueueJobClear}
+        onStatusChange={onStatusChange}
+      />
+    );
+
+    // Simulate changing the status select
+    const statusSelect = getByTestId('status-select');
+    // Using fireEvent would be better here, but we're using a simple mock
+    statusSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    
+    // Verify onStatusChange was called
+    expect(onStatusChange).toHaveBeenCalledTimes(1);
   });
 });

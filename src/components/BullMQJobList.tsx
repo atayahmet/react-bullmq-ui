@@ -59,6 +59,7 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
   onRefresh,
   onJobAdd,
   onQueuePauseToggle,
+  onQueueJobClear,
   theme = "light",
 }) => {
   const [searchText, setSearchText] = useState("");
@@ -825,6 +826,19 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
           queueNames={allQueueNamesForFilter}
           pauseStates={queuePauseStates}
           onQueuePauseToggle={onQueuePauseToggle}
+          onQueueJobClear={typeof onQueueJobClear === 'function' ? async (queueName, status) => {
+            try {
+              // Kuyruk temizleme işlemini başlat
+              await onQueueJobClear(queueName, status);
+              
+              // Listeyi yenile
+              if (onRefresh) {
+                onRefresh();
+              }
+            } catch (error) {
+              console.error("Failed to clear jobs:", error);
+            }
+          } : undefined}
         />
 
         <InsightsModal
