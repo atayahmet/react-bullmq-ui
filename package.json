@@ -1,6 +1,6 @@
 {
   "name": "react-bullmq-ui",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A React UI component for listing, managing, and visualizing BullMQ jobs, built with Ant Design.",
   "main": "dist/index.js",
   "types": "dist/types/index.d.ts",
