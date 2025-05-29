@@ -44,9 +44,24 @@ const MockQueueManagementModal = (props: any) => {
             onChange={(e) => props.onStatusChange && props.onStatusChange(props.selectedQueue, e.target.value)}
           >
             <option value="">Select a status</option>
-            <option value="failed">FAILED</option>
-            <option value="completed">COMPLETED</option>
-            <option value="active">ACTIVE</option>
+            <option value="failed">
+              {props.jobStatusCounts && props.selectedQueue && props.jobStatusCounts[props.selectedQueue]?.failed > 0 
+                ? `FAILED (${props.jobStatusCounts[props.selectedQueue].failed})` 
+                : 'FAILED'
+              }
+            </option>
+            <option value="completed">
+              {props.jobStatusCounts && props.selectedQueue && props.jobStatusCounts[props.selectedQueue]?.completed > 0 
+                ? `COMPLETED (${props.jobStatusCounts[props.selectedQueue].completed})` 
+                : 'COMPLETED'
+              }
+            </option>
+            <option value="active">
+              {props.jobStatusCounts && props.selectedQueue && props.jobStatusCounts[props.selectedQueue]?.active > 0 
+                ? `ACTIVE (${props.jobStatusCounts[props.selectedQueue].active})` 
+                : 'ACTIVE'
+              }
+            </option>
           </select>
           <button
             data-testid="clear-jobs-button"
@@ -342,5 +357,109 @@ describe('QueueManagementModal Component', () => {
     
     // Verify onStatusChange was called
     expect(onStatusChange).toHaveBeenCalledTimes(1);
+  });
+
+  // Job Status Counts Feature Tests
+  test('displays job counts in status dropdown options', () => {
+    const jobStatusCounts = {
+      'queue1': {
+        'completed': 10,
+        'failed': 5,
+        'active': 3
+      }
+    };
+
+    const { getByTestId } = render(
+      <MockQueueManagementModal
+        isVisible={true}
+        queues={mockQueues}
+        selectedQueue="queue1"
+        onCancel={onCancel}
+        onQueueJobClear={onQueueJobClear}
+        jobStatusCounts={jobStatusCounts}
+      />
+    );
+
+    // Get the select element
+    const selectElement = getByTestId('status-select');
+    
+    // Check the content of the options
+    const options = Array.from(selectElement.querySelectorAll('option'));
+    
+    // Find options with counts
+    const failedOption = options.find(opt => opt.textContent && opt.textContent.includes('FAILED (5)'));
+    const completedOption = options.find(opt => opt.textContent && opt.textContent.includes('COMPLETED (10)'));
+    const activeOption = options.find(opt => opt.textContent && opt.textContent.includes('ACTIVE (3)'));
+    
+    // Verify counts are displayed in options
+    expect(failedOption).toBeTruthy();
+    expect(completedOption).toBeTruthy();
+    expect(activeOption).toBeTruthy();
+  });
+
+  test('handles undefined jobStatusCounts gracefully', () => {
+    const { getByTestId } = render(
+      <MockQueueManagementModal
+        isVisible={true}
+        queues={mockQueues}
+        selectedQueue="queue1"
+        onCancel={onCancel}
+        onQueueJobClear={onQueueJobClear}
+        // No jobStatusCounts provided
+      />
+    );
+
+    // Get the select element
+    const selectElement = getByTestId('status-select');
+    
+    // Check that the options exist without counts
+    const options = Array.from(selectElement.querySelectorAll('option'));
+    
+    // Find options without counts
+    const failedOption = options.find(opt => opt.textContent === 'FAILED');
+    const completedOption = options.find(opt => opt.textContent === 'COMPLETED');
+    const activeOption = options.find(opt => opt.textContent === 'ACTIVE');
+    
+    // Verify options exist without counts
+    expect(failedOption).toBeTruthy();
+    expect(completedOption).toBeTruthy();
+    expect(activeOption).toBeTruthy();
+  });
+
+  test('shows zero counts correctly in status dropdown options', () => {
+    const jobStatusCounts = {
+      'queue1': {
+        'completed': 0,
+        'failed': 0,
+        'active': 0
+      }
+    };
+
+    const { getByTestId } = render(
+      <MockQueueManagementModal
+        isVisible={true}
+        queues={mockQueues}
+        selectedQueue="queue1"
+        onCancel={onCancel}
+        onQueueJobClear={onQueueJobClear}
+        jobStatusCounts={jobStatusCounts}
+      />
+    );
+
+    // Get the select element
+    const selectElement = getByTestId('status-select');
+    
+    // Check the content of the options
+    const options = Array.from(selectElement.querySelectorAll('option'));
+    
+    // Options should not have counts for zero values
+    const failedOption = options.find(opt => opt.textContent === 'FAILED');
+    const completedOption = options.find(opt => opt.textContent === 'COMPLETED');
+    const activeOption = options.find(opt => opt.textContent === 'ACTIVE');
+    
+    // Verify options exist without count indicators (since counts are 0)
+    expect(failedOption).toBeTruthy();
+    expect(completedOption).toBeTruthy();
+    expect(activeOption).toBeTruthy();
   });
 });

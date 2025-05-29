@@ -25,6 +25,7 @@ interface QueueManagementModalProps {
   pauseStates: Record<string, boolean>;
   onQueuePauseToggle?: (queueName: string, isPaused: boolean) => void;
   onQueueJobClear?: (queueName: string, status: string) => Promise<void>;
+  jobStatusCounts?: Record<string, Record<string, number>>;
 }
 
 const QueueManagementModal: React.FC<QueueManagementModalProps> = ({
@@ -34,6 +35,7 @@ const QueueManagementModal: React.FC<QueueManagementModalProps> = ({
   pauseStates,
   onQueuePauseToggle,
   onQueueJobClear,
+  jobStatusCounts,
 }) => {
   // Status seçimleri için state
   const [selectedStatuses, setSelectedStatuses] = useState<Record<string, string[]>>({});
@@ -91,11 +93,15 @@ const QueueManagementModal: React.FC<QueueManagementModalProps> = ({
                       value={selectedStatuses[queueName]?.[0] || undefined}
                       onChange={(value) => handleStatusChange(queueName, value ? [value] : [])}
                     >
-                      {JOB_STATUSES.map(status => (
-                        <Option key={status} value={status}>
-                          {status.toUpperCase()}
-                        </Option>
-                      ))}
+                      {JOB_STATUSES.map(status => {
+                        // Get the count for this status and queue, default to 0 if not available
+                        const count = jobStatusCounts?.[queueName]?.[status] || 0;
+                        return (
+                          <Option key={status} value={status}>
+                            {status.toUpperCase()} {(count > 0 || count === 0) && `(${count})`}
+                          </Option>
+                        );
+                      })}
                     </Select>
                     <Popconfirm
                       title="Clear jobs"

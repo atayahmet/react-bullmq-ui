@@ -335,6 +335,27 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
     return tableData;
   }, [initialJobs, searchText, statusFilters, jobStates, selectedQueueFilter]);
 
+  // Job statülerine göre sayım yapma
+  const jobStatusCounts = React.useMemo(() => {
+    const counts: Record<string, Record<string, number>> = {};
+    
+    // Her job için
+    processedAndFormattedJobs.forEach(job => {
+      const queueName = job.queueName;
+      const status = job.currentStatus;
+      
+      // Queue için kayıt yoksa oluştur
+      if (!counts[queueName]) {
+        counts[queueName] = {};
+      }
+      
+      // Status için sayaç yoksa oluştur, varsa artır
+      counts[queueName][status] = (counts[queueName][status] || 0) + 1;
+    });
+    
+    return counts;
+  }, [processedAndFormattedJobs]);
+
   // Using a state map to track copied IDs
   const [copiedIds, setCopiedIds] = useState<Record<string, boolean>>({});
 
@@ -839,6 +860,7 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
               console.error("Failed to clear jobs:", error);
             }
           } : undefined}
+          jobStatusCounts={jobStatusCounts}
         />
 
         <InsightsModal
