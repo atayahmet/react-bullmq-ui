@@ -148,8 +148,9 @@ const AddJobModal: React.FC<AddJobModalProps> = ({
       footer={null} 
       destroyOnHidden
       width={700}
+      className={classNames.ADD_JOB_MODAL_CLASS}
     >
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="vertical" className={classNames.JOB_FORM_CLASS}>
         <Form.Item
           name="queueName"
           label="Queue"

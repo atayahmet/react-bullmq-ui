@@ -69,10 +69,12 @@ const QueueManagementModal: React.FC<QueueManagementModalProps> = ({
       footer={null}
       width={700}
       destroyOnClose
+      className={classNames.QUEUE_MANAGEMENT_MODAL_CLASS}
     >
       <List
         itemLayout="horizontal"
         dataSource={queueNames}
+        className={classNames.QUEUE_LIST_CLASS}
         renderItem={(queueName) => (
           <List.Item>
             <List.Item.Meta

@@ -98,6 +98,38 @@
   margin-bottom: 16px;
 }
 
+/* Details modal specific styles */
+.bullmq-ui-details-modal .ant-modal-body {
+  padding: 16px;
+}
+
+/* Queue management modal styles */
+.bullmq-ui-queue-management-modal .ant-modal-content {
+  border-radius: 6px;
+}
+
+.bullmq-ui-queue-list {
+  margin-top: 10px;
+}
+
+/* Insights modal styles */
+.bullmq-ui-insights-modal .ant-modal-body {
+  padding: 20px;
+}
+
+.bullmq-ui-insights-chart {
+  margin-top: 16px;
+}
+
+/* Add job modal styles */
+.bullmq-ui-add-job-modal .ant-modal-body {
+  padding: 20px 24px;
+}
+
+.bullmq-ui-job-form .ant-form-item-label > label {
+  font-weight: 500;
+}
+
 /* Loading spinner */
 .bullmq-ui-loading {
   display: flex;

@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, Progress, Card, Row, Col, Typography } from "antd";
 import { getStatusColor } from "../utils/formatters";
+import * as classNames from "../utils/classNames";
 
 const { Title, Text } = Typography;
 
@@ -27,13 +28,14 @@ const InsightsModal: React.FC<InsightsModalProps> = ({
       onCancel={onCancel}
       footer={null}
       width={700}
+      className={classNames.INSIGHTS_MODAL_CLASS}
     >
       <Title level={4}>Job Status Distribution</Title>
       <Text type="secondary">
         A graphical representation of your job status distribution across all queues.
       </Text>
 
-      <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
+      <Row gutter={[16, 16]} style={{ marginTop: 20 }} className={classNames.INSIGHTS_CHART_CLASS}>
         {jobStatusData.map((item) => {
           const percentage = totalJobs > 0 ? Math.round((item.count / totalJobs) * 100) : 0;
           return (

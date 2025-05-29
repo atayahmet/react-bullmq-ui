@@ -221,6 +221,10 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
         queueName = (job as ExtendedJobType).queueName;
       } else if ((job as any).queueQualifiedName) {
         queueName = (job as any).queueQualifiedName as string;
+        // "bull:" önekini kaldır
+        if (queueName && queueName.startsWith('bull:')) {
+          queueName = queueName.substring(5);
+        }
       }
       
       if (queueName) {
@@ -252,6 +256,10 @@ const BullMQJobList: React.FC<BullMQJobListProps> = ({
       } else if ((job as any).queueQualifiedName) {
         // Support for example-app format
         queueName = (job as any).queueQualifiedName as string;
+        // "bull:" önekini kaldır
+        if (queueName && queueName.startsWith('bull:')) {
+          queueName = queueName.substring(5);
+        }
       }
 
       const jobName = job.name || "";

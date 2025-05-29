@@ -29,6 +29,22 @@ export const DETAILS_BUTTON_CLASS = 'bullmq-ui-details-button';
 // Modals
 export const MODAL_CLASS = 'bullmq-ui-modal';
 export const MODAL_TABS_CLASS = 'bullmq-ui-modal-tabs';
+export const DETAILS_MODAL_CLASS = 'bullmq-ui-details-modal';
+export const LOGS_CLASS = 'bullmq-ui-logs';
+export const LOGS_TITLE_CLASS = 'bullmq-ui-logs-title';
+export const LOG_LINE_CLASS = 'bullmq-ui-log-line';
+
+// Queue management modal
+export const QUEUE_MANAGEMENT_MODAL_CLASS = 'bullmq-ui-queue-management-modal';
+export const QUEUE_LIST_CLASS = 'bullmq-ui-queue-list';
+
+// Insights modal
+export const INSIGHTS_MODAL_CLASS = 'bullmq-ui-insights-modal';
+export const INSIGHTS_CHART_CLASS = 'bullmq-ui-insights-chart';
+
+// Add job modal
+export const ADD_JOB_MODAL_CLASS = 'bullmq-ui-add-job-modal';
+export const JOB_FORM_CLASS = 'bullmq-ui-job-form';
 
 // Loading and error states
 export const LOADING_CLASS = 'bullmq-ui-loading';

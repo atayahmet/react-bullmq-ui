@@ -162,6 +162,104 @@ const App = () => {
 export default App;
 ```
 
+## Styling and Customization
+
+React BullMQ UI is designed to be easily customized to match your application's look and feel. All components are built with Ant Design and use CSS class names that can be targeted for custom styling.
+
+### CSS Class Names
+
+All elements in the components have specific CSS class names that you can use for custom styling. Here's a list of the main class names:
+
+**Main Container and Filters:**
+- `bullmq-ui-container` - Main container element
+- `bullmq-ui-filter-card` - Filter section card
+- `bullmq-ui-filters-container` - Container for all filters
+- `bullmq-ui-filter-row` - Filter row
+- `bullmq-ui-search-col` - Search column
+- `bullmq-ui-search-input` - Search input field
+- `bullmq-ui-queue-filter-col` - Queue filter column
+- `bullmq-ui-status-filter-col` - Status filter column
+- `bullmq-ui-jobs-count` - Jobs count display
+- `bullmq-ui-actions-section` - Action buttons section
+
+**Table Styling:**
+- `bullmq-ui-table` - Main table element
+- `bullmq-ui-table-row` - Table rows
+- `bullmq-ui-table-cell` - Table cells
+
+**Action Buttons:**
+- `bullmq-ui-action-button` - Generic action button
+- `bullmq-ui-retry-button` - Retry button
+- `bullmq-ui-delete-button` - Delete button
+- `bullmq-ui-details-button` - Details button
+
+**Modals:**
+- `bullmq-ui-modal` - Generic modal class
+- `bullmq-ui-modal-tabs` - Modal tabs
+- `bullmq-ui-details-modal` - Job details modal
+- `bullmq-ui-queue-management-modal` - Queue management modal
+- `bullmq-ui-queue-list` - Queue list in the management modal
+- `bullmq-ui-insights-modal` - Insights modal
+- `bullmq-ui-insights-chart` - Charts in the insights modal
+- `bullmq-ui-add-job-modal` - Add job modal
+- `bullmq-ui-job-form` - Job form in the add job modal
+
+**Log Viewer:**
+- `bullmq-ui-logs` - Logs container
+- `bullmq-ui-logs-title` - Logs title
+- `bullmq-ui-log-line` - Individual log line
+
+**States:**
+- `bullmq-ui-loading` - Loading state elements
+- `bullmq-ui-error` - Error state elements
+- `bullmq-ui-status-tag` - Job status tags
+
+### Example Custom Styling
+
+You can add custom styling to these elements by targeting their class names in your CSS:
+
+```css
+/* Make the job table more compact */
+.bullmq-ui-table {
+  font-size: 12px;
+}
+
+/* Style status tags with rounded corners */
+.bullmq-ui-status-tag {
+  border-radius: 12px;
+  padding: 0 10px;
+}
+
+/* Custom styling for action buttons */
+.bullmq-ui-action-button {
+  border-radius: 4px;
+}
+
+/* Style the job details modal */
+.bullmq-ui-details-modal .ant-modal-content {
+  border-radius: 8px;
+}
+
+/* Style the queue management modal */
+.bullmq-ui-queue-management-modal .ant-modal-header {
+  background-color: #f0f2f5;
+}
+
+/* Style the insights charts */
+.bullmq-ui-insights-chart .ant-card {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Style the add job form */
+.bullmq-ui-job-form .ant-form-item-label {
+  font-weight: 500;
+}
+```
+
+### Theme Customization
+
+For deeper customization, you can use Ant Design's theming capabilities by customizing the theme tokens in your application. This allows you to change colors, spacing, and other design elements throughout the UI.
+
 ## `BullMQJobList` Props
 
 Below is a detailed list of props accepted by the `BullMQJobList` component:
